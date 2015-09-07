@@ -10,19 +10,8 @@
 .include "m8def.inc"		;All defines(Ports, Interrupt Table, etc...) needed for the Atmega8
 .list						;Turn listfile generation On
 
-.equ	Mass  = 1200		;Mass 
-.equ	Velocity = 28		;velocity
-.equ	Distance =	1		;Distance
-
-;Pulse width = (RMPLoad_lookup value) * FactorA / FactorB
-.equ	FactorA = 1 		;Parameter related to Coolant Temperature
-.equ	FactorB = 2			;Parameter related to Oxygen Level - int > 1 (actual equation uses *FactorB where FactorB<1)
-
-.equ	Load = 3			;Load value for lookup table// RPMLoad
-
 .dseg 						; Start data segment
 .org 0x67 					; Set SRAM address to hex 67
-FlagPD2: .byte 1 ; Reserve a byte at SRAM for FlagPD2
 CounterSchedule: .byte 1 ; Reserve a byte at SRAM for CounterSchedule
 /*  ************ Instructions on using variables in program memory
 .DSEG 
@@ -97,8 +86,7 @@ Main:
 		out TCNT0, r16			; TCNT0Value = 255 - MaxValue	
 		
 
-		ldi YH, high(RPMLoad_Lookup<<1)
-		ldi YL, low(RPMLoad_Lookup<<1)
+
 
 		ldi r16 , 0
 		sts FlagPD2, r16
@@ -115,6 +103,121 @@ forever:
 		End_Task UpTime
 		rjmp forever 
 ;*****************End of program *****************
+
+
+
+
+
+;***************** Clock Tick Interrupt Service Routine *****************
+ClockTick:
+		Start_Task 	ClockTick_Task	;Turn output indicator pin On
+		sei		;Enable interrupts!!!
+
+		;********* Write ClockTick Code here ********
+		ldi	r16, 68		; MaxValue = TOVck (1.5ms or your Cal time) * Pck (1MHz) / 8 (prescaler)
+		out TCNT0, r16			; TCNT0Value = 255 - MaxValue
+		
+
+		; FuelInjectionTimingTask HARD
+		; Every nth tick, run the timing subroutine
+
+
+		; CarMonitorTask SOFT
+		; Every tick, read ADCL and:
+		; convert from fahrenheit to degrees C
+		; convert from Fluid Ounces to Litres 
+
+		End_Task	ClockTick_Task	;Turn output indicator pin Off
+		RETI						;Return from Interurpt
+;***************** End External Interrupt **********************
+
+; ASYNC CODE
+		; Collision DetectionTask HARD - DO NOT SEI 
+		; Use ADCH and ADCL. if > 0011 (3): Turn on an LED.
+		; Else turn off. Optimise: Only read ADCH. If any are 1. Turn on LED
+		
+
+		; CarDoorIndicatorTask SOFT - SEI ON
+		;
+
+
+;CollsionDetector HARD
+
+
+
+;***************** Start of Task3 *****************
+Task_3:	Start_Task 	3	;Turn output indicator pin On
+		
+		 push r16
+
+		;ldi YH, high(RPMLoad_Lookup<<1)
+		;ldi YL, low(RPMLoad_Lookup<<1)
+
+		 ; Read 10-bit ADC conversion result
+		 in r17, ADCH
+		 in r16, ADCL
+		 
+		 ;Store Z registers in Y registers
+		 mov zl, yl
+		 mov zh, yh
+
+		 ;Store the ADC results in r18 so we can math it.
+		 mov r18, r17; we need to work with the MSBs of the ADC input
+
+		 ldi r20, 5; store 5 in r20, used below
+		 mul r18, r20; Multiply r18 (the ADC result) by 5 
+
+		 mov r18, r0
+
+
+		 ldi r20, 1
+		 ldi r22, Load;Shift Z reg by the Load	
+		 sub r22, r20 ;substract 1 from Load
+
+		 add r18, r22
+		 add zl, r18
+
+		 lpm r18, z
+
+		 ldi r20, FactorA
+		 mul r18, r20
+
+		 mov r21, r0
+		 ldi r22, FactorB
+
+		 rcall div8u
+
+
+
+
+
+		 pop r16
+		 End_Task	3	;Turn output indicator pin Off
+		RET
+;***************** End Task3 **********************
+
+
+
+;***************** Start of External Interrupt *****************
+IntV0:
+		push r16
+		;Done
+		ldi r16 , 1
+		sts FlagPD2, r16 ;Set the flag to 1. This is read in the ClockTick ISR
+		pop r16
+		reti			;Return from Interurpt
+;***************** End External Interrupt **********************
+
+
+
+
+
+
+
+
+
+
+
 
 
 ;***************** Start of Task1 *****************
@@ -147,137 +250,3 @@ Task_1:	Start_Task 	1 	;Turn output indicator pin On
 		End_Task	1	;Turn output indicator pin Off
 		RETI
 ;***************** End Task1 **********************
-
-
-;***************** Start of Task2 *****************
-Task_2:	Start_Task 	2	;Turn output indicator pin On
-		;********* Task 2 idle Code *********
-		rcall System_Monitor
-		;************************************
-		End_Task	2	;Turn output indicator pin Off
-		RET
-;***************** End Task2 **********************
-
-
-;***************** Start of Task3 *****************
-Task_3:	Start_Task 	3	;Turn output indicator pin On
-		
-		 push r16
-
-
-		 ; Read 10-bit ADC conversion result
-		 in r17, ADCH
-		 in r16, ADCL
-		 
-		 ;Store Z registers in Y registers
-		 mov zl, yl
-		 mov zh, yh
-
-		 ;Store the ADC results in r18 so we can math it.
-		 mov r18, r17; we need to work with the MSBs of the ADC input
-
-		 ldi r20, 5; store 5 in r20, used below
-		 mul r18, r20; Multiply r18 (the ADC result) by 5 
-
-		 mov r18, r0
-
-
-		 ldi r20, 1
-		 ldi r22, Load;;Shift Z reg by the Load	
-		 sub r22, r20 ;substract 1 from Load
-
-		 add r18, r22
-		 add zl, r18
-
-		 lpm r18, z
-
-		 /*
-		 clr 23
-		 mov r22, r18
-
-		 clr r21
-		 mov r20, FactorA
-
-		 rcall mul16x16_32;  r19:r18:r17:r16 = r23:r22 * r21:r20 ////will erase r17, r16
-		 mov r
-
-		 */
-
-		 ldi r20, FactorA
-		 mul r18, r20
-
-		 mov r21, r0
-		 ldi r22, FactorB
-
-		 rcall div8u
-
-
-
-
-
-		 pop r16
-		 End_Task	3	;Turn output indicator pin Off
-		RET
-;***************** End Task3 **********************
-
-
-
-;***************** Start of External Interrupt *****************
-IntV0:
-		push r16
-		;Done
-		ldi r16 , 1
-		sts FlagPD2, r16 ;Set the flag to 1. This is read in the ClockTick ISR
-		pop r16
-		reti			;Return from Interurpt
-;***************** End External Interrupt **********************
-
-;***************** Start of External Interrupt *****************
-ClockTick:
-		Start_Task 	ClockTick_Task	;Turn output indicator pin On
-		sei		;Enable interrupts!!!
-
-		;********* Write ClockTick Code here ********
-		ldi	r16, 68		; MaxValue = TOVck (1.5ms or your Cal time) * Pck (1MHz) / 8 (prescaler)
-		out TCNT0, r16			; TCNT0Value = 255 - MaxValue
-		
-
-		; **************** TASK 3 - ADC *************************
-		lds r16,CounterSchedule ; Load CounterSchedule into register 16
-
-		cpi r16, 3 
-		brne SkipTask3
-		; every 3rd tick, run task 3
-		;if (Schedule counter == 3) run this and set schedulecounter = 1 else schedulecounter++
-		rcall Task_3 ; Run the ADC
-		clr r16
-
-		SkipTask3:
-		inc r16
-		sts CounterSchedule, r16; Store r16 back into FlagSchedule
-
-		; **************** TASK 1 - Force calculation ******************
-		lds r16, FlagPD2
-		cpi r16, 1
-		brne SkipTask1
-		; if PD2 was pressed, run task 1
-		; branch if (pd2Flag == true) { run task 1, and set pd2flag = false} else {do nothing}
-		rcall Task_1 ; Run the Force calculation
-		clr r16
-		sts FlagPD2, r16
-
-		;***************** TASK 2 - System Monitor always runs ****************
-		SkipTask1:
-		rcall Task_2 ; Run system monitor. Lowest priority
-
-
-
-
-		;************************************
-
-		End_Task	ClockTick_Task	;Turn output indicator pin Off
-		RETI						;Return from Interurpt
-;***************** End External Interrupt **********************
-
-
-
