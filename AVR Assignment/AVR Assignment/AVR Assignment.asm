@@ -173,45 +173,33 @@ Task_3:	Start_Task 	3	;Turn output indicator pin On
 		 mov r19, r17 ; high
 
 		 
-		 ;RPM Level Lookup
+		 ;RPM Level Lookup stored in r21
 		 clr r20
 		 sbrc r18, 7 ; Skip if bit 7 in ADCL is clear
-		 sbr r20, $01;
-
-		 sbrc r18, 6 ; Skip if bit 6 in ADCL is clear
 		 sbr r20, $02;
 
+		 sbrc r18, 6 ; Skip if bit 6 in ADCL is clear
+		 sbr r20, $01;
+
+		 ldi r21, 4; store 4 in r20, used below
+		 mul r20, r21; Multiply r20 (the ADC result) by 4 
+
+		 mov r21, r0 ; Move the result of the multiplication to r21
+
+		 ;Load lookup stored in r20
+		 clr r20
+		 sbrc r18,  5; Skip if bit 5 in ADCL is clear
+		 sbr r20, $02;
+
+		 sbrc r18, 4 ; Skip if bit 4 in ADCL is clear
+		 sbr r20, $01;
+
+		 add r21, r20 ; Add the load to the previous RPM level
+
+		 add ZL, r21
 
 
-		 ;Store the ADC results in r18 so we can math it.
-		 mov r18, r17; we need to work with the MSBs of the ADC input
-
-		 ldi r20, 5; store 5 in r20, used below
-		 mul r18, r20; Multiply r18 (the ADC result) by 5 
-
-		 mov r18, r0
-
-
-		 ldi r20, 1
-		 ;ldi r22, Load;Shift Z reg by the Load	
-		 sub r22, r20 ;substract 1 from Load
-
-		 add r18, r22
-		 add zl, r18
-
-		 lpm r18, z
-
-		 ;ldi r20, FactorA
-		 mul r18, r20
-
-		 mov r21, r0
-		 ;ldi r22, FactorB
-
-		 ;rcall div8u
-
-
-
-
+		 lpm r22, z
 
 		 pop r16
 		 End_Task	3	;Turn output indicator pin Off
