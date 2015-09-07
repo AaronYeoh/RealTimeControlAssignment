@@ -43,7 +43,7 @@ RPMLoad_Lookup:       ;1/1	2/1	  3/1	4/1	   1/2  2/2  3/2    4/2	   1/3	2/3	  3/
 FactorA_Lookup:		;0  25  50  75
 			.db		12, 11, 10, 9
 
-FactorB_Lookup:		;1  2   3   4
+FactorB_Lookup:		;1  2   3   4 //factor B
 			.db		12, 11, 10, 9	
 
 .org $00200					;Setting Origin Address
