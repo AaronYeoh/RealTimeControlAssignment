@@ -23,7 +23,7 @@
 .dseg 						; Start data segment
 .org 0x67 					; Set SRAM address to hex 67
 FlagPD2: .byte 1 ; Reserve a byte at SRAM for FlagPD2
-CounterSchedule: .byte 1 ; Reserve a byte at SRAM
+CounterSchedule: .byte 1 ; Reserve a byte at SRAM for CounterSchedule
 /*  ************ Instructions on using variables in program memory
 .DSEG 
 var1:  .BYTE 1 ; reserve 1 byte to var1 
@@ -48,9 +48,8 @@ ld r1,Z ; Load VAR1 into register 1
 ;.cseg
 .org   0x0100               ;table address engine speed (RPM) and load
 ;Load/RPM('000)
-RPMLoad_Lookup:       ;1/1	2/1	  3/1	4/1	  5/1    1/2  2/2 	3/2    4/2	 5/2  1/3	2/3	  3/3	4/3	  5/3	1/4	  2/4	3/4	  4/4	5/4   
-	        .db       0x01, 0x02, 0x03, 0x04, 0x05, 0x02, 0x04, 0x06, 0x08, 0x0A, 0x03, 0x06, 0x09, 0x0C, 0x0F, 0x04, 0x08, 0x0C, 0x10, 0x14
-
+RPMLoad_Lookup:       ;1/1	2/1	  3/1	4/1	   1/2  2/2  3/2    4/2	   1/3	2/3	  3/3	4/3	   1/4	  2/4	3/4	  4/4  
+	        .db       0x01, 0x02, 0x03, 0x04, 0x02, 0x04, 0x06, 0x08, 0x03, 0x06, 0x09, 0x0C, 0x04, 0x08, 0x0C, 0x10
 	
 
 .org $00200					;Setting Origin Address
@@ -66,9 +65,7 @@ Main:
 		out SPL,r16						
 		ldi r16,HIGH(RAMEND)						
 		out SPH,r16		
-		
-		;ldi r20, 0x01
-		;sts ScheduleFlag, r20		;Hint - define this variable to use for task scheduling						
+			
 
 		;CBI DDRD, PD2		;I/O Setup
 		sbi PORTD,PD2
@@ -91,16 +88,13 @@ Main:
 		cbi DDRC,PC1		
 
 		;********* ClockTick 8-bit Timer/Counter 0 *******      
-		ldi r16, (1<<CS01)            
+		ldi r16, (1<<CS01)      ; Start Counter 0      
       	out TCCR0, r16			; Timer Clock = Sys Clock (1MHz) / 8 (prescaler)
-		ldi r16, (1<<TOIE0)            
+		ldi r16, (1<<TOIE0)     ; Enable interru       
 		out TIMSK, r16			; Enable Timer Overflow interrupt
 
-		ldi	r16, 68		; MaxValue = TOVck (1.5ms or your Cal time) * Pck (1MHz) / 8 (prescaler)
-		 		; TCNT0Value = 255 - MaxValue
-
-					
-
+		ldi	r16, 68				; MaxValue = TOVck (1.5ms or your Cal time) * Pck (1MHz) / 8 (prescaler)
+		out TCNT0, r16			; TCNT0Value = 255 - MaxValue	
 		
 
 		ldi YH, high(RPMLoad_Lookup<<1)
@@ -117,14 +111,7 @@ Main:
 		;********* Main infinite loop ********
 forever:
 		Start_Task UpTime
-		; Place calls to tasks here
-		
-		
-		
-		;sbis PIND, PD2
-		;rcall Task_1	;Uncomment to use Task
-		;rcall Task_2	;Uncomment to use Task
-		;rcall Task_3	;Uncomment to use Task
+
 		End_Task UpTime
 		rjmp forever 
 ;*****************End of program *****************
@@ -229,7 +216,7 @@ Task_3:	Start_Task 	3	;Turn output indicator pin On
 
 
 		 pop r16
-		End_Task	3	;Turn output indicator pin Off
+		 End_Task	3	;Turn output indicator pin Off
 		RET
 ;***************** End Task3 **********************
 
@@ -248,7 +235,8 @@ IntV0:
 ;***************** Start of External Interrupt *****************
 ClockTick:
 		Start_Task 	ClockTick_Task	;Turn output indicator pin On
-		sei ;Enable interrupts!!!
+		sei		;Enable interrupts!!!
+
 		;********* Write ClockTick Code here ********
 		ldi	r16, 68		; MaxValue = TOVck (1.5ms or your Cal time) * Pck (1MHz) / 8 (prescaler)
 		out TCNT0, r16			; TCNT0Value = 255 - MaxValue
