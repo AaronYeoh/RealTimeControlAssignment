@@ -39,7 +39,12 @@ ld r1,Z ; Load VAR1 into register 1
 ;Load/RPM('000)
 RPMLoad_Lookup:       ;1/1	2/1	  3/1	4/1	   1/2  2/2  3/2    4/2	   1/3	2/3	  3/3	4/3	   1/4	  2/4	3/4	  4/4  
 	        .db       0x01, 0x02, 0x03, 0x04, 0x02, 0x04, 0x06, 0x08, 0x03, 0x06, 0x09, 0x0C, 0x04, 0x08, 0x0C, 0x10
-	
+
+FactorA_Lookup:		;0  25  50  75
+			.db		12, 11, 10, 9
+
+FactorB_Lookup:		;1  2   3   4
+			.db		12, 11, 10, 9	
 
 .org $00200					;Setting Origin Address
 .include "MECHENG313A.inc"	;Functions needed for MECHENG313
@@ -88,18 +93,15 @@ Main:
 
 
 
-		ldi r16 , 0
-		sts FlagPD2, r16
-
 		ldi r16 , 1
 		sts CounterSchedule, r16
 
-		sei ; enable interrupts
+		;sei ; enable interrupts
 
 		;********* Main infinite loop ********
 forever:
 		Start_Task UpTime
-
+		rcall Task_3
 		End_Task UpTime
 		rjmp forever 
 ;*****************End of program *****************
@@ -140,8 +142,18 @@ ClockTick:
 		; CarDoorIndicatorTask SOFT - SEI ON
 		;
 
+		; LeftIndicatorTask FIRM
 
-;CollsionDetector HARD
+		; RightIndicatorTask FIRM
+
+		; LeftToggleTask FIRM
+
+		; RightToggleTask FIRM
+
+
+
+
+
 
 
 
@@ -150,16 +162,26 @@ Task_3:	Start_Task 	3	;Turn output indicator pin On
 		
 		 push r16
 
-		;ldi YH, high(RPMLoad_Lookup<<1)
-		;ldi YL, low(RPMLoad_Lookup<<1)
+		ldi ZH, high(RPMLoad_Lookup<<1)
+		ldi ZL, low(RPMLoad_Lookup<<1)
 
 		 ; Read 10-bit ADC conversion result
-		 in r17, ADCH
 		 in r16, ADCL
+		 in r17, ADCH
+
+		 mov r18, r16 ; low
+		 mov r19, r17 ; high
+
 		 
-		 ;Store Z registers in Y registers
-		 mov zl, yl
-		 mov zh, yh
+		 ;RPM Level Lookup
+		 clr r20
+		 sbrc r18, 7 ; Skip if bit 7 in ADCL is clear
+		 sbr r20, $01;
+
+		 sbrc r18, 6 ; Skip if bit 6 in ADCL is clear
+		 sbr r20, $02;
+
+
 
 		 ;Store the ADC results in r18 so we can math it.
 		 mov r18, r17; we need to work with the MSBs of the ADC input
@@ -171,7 +193,7 @@ Task_3:	Start_Task 	3	;Turn output indicator pin On
 
 
 		 ldi r20, 1
-		 ldi r22, Load;Shift Z reg by the Load	
+		 ;ldi r22, Load;Shift Z reg by the Load	
 		 sub r22, r20 ;substract 1 from Load
 
 		 add r18, r22
@@ -179,13 +201,13 @@ Task_3:	Start_Task 	3	;Turn output indicator pin On
 
 		 lpm r18, z
 
-		 ldi r20, FactorA
+		 ;ldi r20, FactorA
 		 mul r18, r20
 
 		 mov r21, r0
-		 ldi r22, FactorB
+		 ;ldi r22, FactorB
 
-		 rcall div8u
+		 ;rcall div8u
 
 
 
@@ -203,7 +225,7 @@ IntV0:
 		push r16
 		;Done
 		ldi r16 , 1
-		sts FlagPD2, r16 ;Set the flag to 1. This is read in the ClockTick ISR
+;		sts FlagPD2, r16 ;Set the flag to 1. This is read in the ClockTick ISR
 		pop r16
 		reti			;Return from Interurpt
 ;***************** End External Interrupt **********************
@@ -224,9 +246,9 @@ IntV0:
 Task_1:	Start_Task 	1 	;Turn output indicator pin On
 		push r16
 		;********* Write Task 1 here ********
-		ldi r22, low(Mass); load low bit 
-		ldi r23, high(Mass); low high bit
-		ldi r21, Velocity; load velocity
+		;ldi r22, low(Mass); load low bit 
+		;ldi r23, high(Mass); low high bit
+		;ldi r21, Velocity; load velocity
 		mul r21, r21; mul has to 
 		mov r21, r1
 		mov r20, r0
