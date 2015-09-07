@@ -1,0 +1,55 @@
+<ASSEMBLER_INFO>
+ <VERSION>2.1.57</VERSION>
+ <DEVICE>"ATmega8"</DEVICE>
+ <WORKING_DIR>\\engad.foe.auckland.ac.nz\engdfs\Home\ayeo722\Documents\RealTimeControlAssignment\AVR Assignment\AVR Assignment\Debug</WORKING_DIR>
+ <INCLUDE_PATH>
+  <DIR>C:\Program Files (x86)\Atmel\Atmel Toolchain\AVR Assembler\Native\2.1.1175\avrassembler\Include</DIR>
+  <DIR></DIR>
+ </INCLUDE_PATH>
+ <SOURCE_FILE>\\engad.foe.auckland.ac.nz\engdfs\Home\ayeo722\Documents\RealTimeControlAssignment\AVR Assignment\AVR Assignment\AVR Assignment.asm</SOURCE_FILE>
+ <INCLUDED_FILES>
+  <FILE>C:\Program Files (x86)\Atmel\Atmel Toolchain\AVR Assembler\Native\2.1.1175\avrassembler\Include\m8def.inc</FILE>
+  <FILE>\\engad.foe.auckland.ac.nz\engdfs\Home\ayeo722\Documents\RealTimeControlAssignment\AVR Assignment\AVR Assignment\MECHENG313A.inc</FILE>
+ </INCLUDED_FILES>
+ <OBJECT_FILES>
+  <FILE>\\engad.foe.auckland.ac.nz\engdfs\Home\ayeo722\Documents\RealTimeControlAssignment\AVR Assignment\AVR Assignment\Debug/AVR Assignment.obj</FILE>
+ </OBJECT_FILES>
+ <HEX_FILES>
+  <FILE>AVR Assignment.hex</FILE>
+ </HEX_FILES>
+ <OUTPUT_FILES>
+  <FILE>AVR Assignment.map</FILE>
+  <FILE>AVR Assignment.lss</FILE>
+ </OUTPUT_FILES>
+ <LABELS>
+  <FlagPD2><FILE>\\engad.foe.auckland.ac.nz\engdfs\Home\ayeo722\Documents\RealTimeControlAssignment\AVR Assignment\AVR Assignment\AVR Assignment.asm</FILE><LINE>25</LINE></FlagPD2>
+  <CounterSchedule><FILE>\\engad.foe.auckland.ac.nz\engdfs\Home\ayeo722\Documents\RealTimeControlAssignment\AVR Assignment\AVR Assignment\AVR Assignment.asm</FILE><LINE>26</LINE></CounterSchedule>
+  <Main><FILE>\\engad.foe.auckland.ac.nz\engdfs\Home\ayeo722\Documents\RealTimeControlAssignment\AVR Assignment\AVR Assignment\AVR Assignment.asm</FILE><LINE>64</LINE></Main>
+  <IntV0><FILE>\\engad.foe.auckland.ac.nz\engdfs\Home\ayeo722\Documents\RealTimeControlAssignment\AVR Assignment\AVR Assignment\AVR Assignment.asm</FILE><LINE>239</LINE></IntV0>
+  <ClockTick><FILE>\\engad.foe.auckland.ac.nz\engdfs\Home\ayeo722\Documents\RealTimeControlAssignment\AVR Assignment\AVR Assignment\AVR Assignment.asm</FILE><LINE>249</LINE></ClockTick>
+  <RPMLoad_Lookup><FILE>\\engad.foe.auckland.ac.nz\engdfs\Home\ayeo722\Documents\RealTimeControlAssignment\AVR Assignment\AVR Assignment\AVR Assignment.asm</FILE><LINE>51</LINE></RPMLoad_Lookup>
+  <mul16x16_16><FILE>\\engad.foe.auckland.ac.nz\engdfs\Home\ayeo722\Documents\RealTimeControlAssignment\AVR Assignment\AVR Assignment\MECHENG313A.inc</FILE><LINE>52</LINE></mul16x16_16>
+  <mul16x16_32><FILE>\\engad.foe.auckland.ac.nz\engdfs\Home\ayeo722\Documents\RealTimeControlAssignment\AVR Assignment\AVR Assignment\MECHENG313A.inc</FILE><LINE>81</LINE></mul16x16_32>
+  <muls16x16_32><FILE>\\engad.foe.auckland.ac.nz\engdfs\Home\ayeo722\Documents\RealTimeControlAssignment\AVR Assignment\AVR Assignment\MECHENG313A.inc</FILE><LINE>115</LINE></muls16x16_32>
+  <mac16x16_32><FILE>\\engad.foe.auckland.ac.nz\engdfs\Home\ayeo722\Documents\RealTimeControlAssignment\AVR Assignment\AVR Assignment\MECHENG313A.inc</FILE><LINE>150</LINE></mac16x16_32>
+  <mac16x16_32_method_B><FILE>\\engad.foe.auckland.ac.nz\engdfs\Home\ayeo722\Documents\RealTimeControlAssignment\AVR Assignment\AVR Assignment\MECHENG313A.inc</FILE><LINE>177</LINE></mac16x16_32_method_B>
+  <fmuls16x16_32><FILE>\\engad.foe.auckland.ac.nz\engdfs\Home\ayeo722\Documents\RealTimeControlAssignment\AVR Assignment\AVR Assignment\MECHENG313A.inc</FILE><LINE>224</LINE></fmuls16x16_32>
+  <fmac16x16_32><FILE>\\engad.foe.auckland.ac.nz\engdfs\Home\ayeo722\Documents\RealTimeControlAssignment\AVR Assignment\AVR Assignment\MECHENG313A.inc</FILE><LINE>260</LINE></fmac16x16_32>
+  <fmac16x16_32_method_B><FILE>\\engad.foe.auckland.ac.nz\engdfs\Home\ayeo722\Documents\RealTimeControlAssignment\AVR Assignment\AVR Assignment\MECHENG313A.inc</FILE><LINE>289</LINE></fmac16x16_32_method_B>
+  <div24x24_24><FILE>\\engad.foe.auckland.ac.nz\engdfs\Home\ayeo722\Documents\RealTimeControlAssignment\AVR Assignment\AVR Assignment\MECHENG313A.inc</FILE><LINE>335</LINE></div24x24_24>
+  <d24u_1><FILE>\\engad.foe.auckland.ac.nz\engdfs\Home\ayeo722\Documents\RealTimeControlAssignment\AVR Assignment\AVR Assignment\MECHENG313A.inc</FILE><LINE>342</LINE></d24u_1>
+  <d24u_2><FILE>\\engad.foe.auckland.ac.nz\engdfs\Home\ayeo722\Documents\RealTimeControlAssignment\AVR Assignment\AVR Assignment\MECHENG313A.inc</FILE><LINE>348</LINE></d24u_2>
+  <d24u_3><FILE>\\engad.foe.auckland.ac.nz\engdfs\Home\ayeo722\Documents\RealTimeControlAssignment\AVR Assignment\AVR Assignment\MECHENG313A.inc</FILE><LINE>360</LINE></d24u_3>
+  <div8u><FILE>\\engad.foe.auckland.ac.nz\engdfs\Home\ayeo722\Documents\RealTimeControlAssignment\AVR Assignment\AVR Assignment\MECHENG313A.inc</FILE><LINE>391</LINE></div8u>
+  <d8u_1><FILE>\\engad.foe.auckland.ac.nz\engdfs\Home\ayeo722\Documents\RealTimeControlAssignment\AVR Assignment\AVR Assignment\MECHENG313A.inc</FILE><LINE>393</LINE></d8u_1>
+  <d8u_2><FILE>\\engad.foe.auckland.ac.nz\engdfs\Home\ayeo722\Documents\RealTimeControlAssignment\AVR Assignment\AVR Assignment\MECHENG313A.inc</FILE><LINE>397</LINE></d8u_2>
+  <d8u_3><FILE>\\engad.foe.auckland.ac.nz\engdfs\Home\ayeo722\Documents\RealTimeControlAssignment\AVR Assignment\AVR Assignment\MECHENG313A.inc</FILE><LINE>403</LINE></d8u_3>
+  <System_Monitor><FILE>\\engad.foe.auckland.ac.nz\engdfs\Home\ayeo722\Documents\RealTimeControlAssignment\AVR Assignment\AVR Assignment\MECHENG313A.inc</FILE><LINE>428</LINE></System_Monitor>
+  <forever><FILE>\\engad.foe.auckland.ac.nz\engdfs\Home\ayeo722\Documents\RealTimeControlAssignment\AVR Assignment\AVR Assignment\AVR Assignment.asm</FILE><LINE>118</LINE></forever>
+  <Task_1><FILE>\\engad.foe.auckland.ac.nz\engdfs\Home\ayeo722\Documents\RealTimeControlAssignment\AVR Assignment\AVR Assignment\AVR Assignment.asm</FILE><LINE>134</LINE></Task_1>
+  <Task_2><FILE>\\engad.foe.auckland.ac.nz\engdfs\Home\ayeo722\Documents\RealTimeControlAssignment\AVR Assignment\AVR Assignment\AVR Assignment.asm</FILE><LINE>166</LINE></Task_2>
+  <Task_3><FILE>\\engad.foe.auckland.ac.nz\engdfs\Home\ayeo722\Documents\RealTimeControlAssignment\AVR Assignment\AVR Assignment\AVR Assignment.asm</FILE><LINE>176</LINE></Task_3>
+  <SkipTask3><FILE>\\engad.foe.auckland.ac.nz\engdfs\Home\ayeo722\Documents\RealTimeControlAssignment\AVR Assignment\AVR Assignment\AVR Assignment.asm</FILE><LINE>267</LINE></SkipTask3>
+  <SkipTask1><FILE>\\engad.foe.auckland.ac.nz\engdfs\Home\ayeo722\Documents\RealTimeControlAssignment\AVR Assignment\AVR Assignment\AVR Assignment.asm</FILE><LINE>282</LINE></SkipTask1>
+ </LABELS>
+</ASSEMBLER_INFO>
