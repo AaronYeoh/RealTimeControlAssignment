@@ -13,6 +13,7 @@
 .dseg 						; Start data segment
 .org 0x67 					; Set SRAM address to hex 67
 CounterSchedule: .byte 1 ; Reserve a byte at SRAM for CounterSchedule
+PulseWidth: .byte 1
 /*  ************ Instructions on using variables in program memory
 .DSEG 
 var1:  .BYTE 1 ; reserve 1 byte to var1 
@@ -43,8 +44,8 @@ RPMLoad_Lookup:       ;1/1	2/1	  3/1	4/1	   1/2  2/2  3/2    4/2	   1/3	2/3	  3/
 FactorA_Lookup:		;0  25  50  75
 			.db		12, 11, 10, 9
 
-FactorB_Lookup:		;1  2   3   4 //factor B
-			.db		12, 11, 10, 9	
+FactorB_Lookup:		;1 2  3  4 //factor B
+			.db		4, 4, 4, 3	
 
 .org $00200					;Setting Origin Address
 .include "MECHENG313A.inc"	;Functions needed for MECHENG313
@@ -201,22 +202,61 @@ Task_3:	Start_Task 	3	;Turn output indicator pin On
 
 
 
-
+		 //Factor A lookup
 		 ldi ZH, high(FactorA_Lookup<<1)
 		 ldi ZL, low(FactorA_Lookup<<1)
 
 
 		 clr r20
-		 sbrc r18,  3; Skip if bit 5 in ADCL is clear
+		 sbrc r18,  3; Skip if bit 3 in ADCL is clear
 		 sbr r20, $02;
 
-		 sbrc r18, 2 ; Skip if bit 4 in ADCL is clear
+		 sbrc r18, 2 ; Skip if bit 2 in ADCL is clear
 		 sbr r20, $01;
 
 		 add ZL, r20
 
 		 lpm r23, z
 
+
+		 //Factor B lookup
+		 ldi ZH, high(FactorB_Lookup<<1)
+		 ldi ZL, low(FactorB_Lookup<<1)
+
+
+		 clr r20
+		 sbrc r18,  1; Skip if bit 1 in ADCL is clear
+		 sbr r20, $02;
+
+		 sbrc r18, 0; Skip if bit 0 in ADCL is clear
+		 sbr r20, $01;
+
+		 add ZL, r20
+
+		 lpm r24, z
+
+
+		 //Calculate Pulse Width
+
+		 
+		 mul r23, r22
+
+		 mov r23,r0
+
+		 mul r24, r23 ; x FactorB
+
+		 mov r23, r1
+		 mov r22, r0
+
+		 ldi r19, 40; divisor
+
+		 clr r24;
+		 clr r21;
+		 clr r20;
+		 ;Finally we divide by 40
+		 rcall div24x24_24 ;r24:r23:r22 = r24:r23:r22 / r21:r20:r19
+		 
+		 sts PulseWidth, r22
 
 
 		 pop r16
