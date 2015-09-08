@@ -165,13 +165,12 @@ Task_3:	Start_Task 	3	;Turn output indicator pin On
 		ldi ZH, high(RPMLoad_Lookup<<1)
 		ldi ZL, low(RPMLoad_Lookup<<1)
 
-		 ; Read 10-bit ADC conversion result
-		 in r16, ADCL
-		 in r17, ADCH
+		 ; Read 10-bit ADC conversion result ; optimisation possible
+		 in r18, ADCL
+		 in r19, ADCH
 
-		 mov r18, r16 ; low
-		 mov r19, r17 ; high
-
+		 ;mov r18, r16 ; low
+		 ;mov r19, r17 ; high
 		 
 		 ;RPM Level Lookup stored in r21
 		 clr r20
@@ -198,8 +197,27 @@ Task_3:	Start_Task 	3	;Turn output indicator pin On
 
 		 add ZL, r21
 
-
 		 lpm r22, z
+
+
+
+
+		 ldi ZH, high(FactorA_Lookup<<1)
+		 ldi ZL, low(FactorA_Lookup<<1)
+
+
+		 clr r20
+		 sbrc r18,  3; Skip if bit 5 in ADCL is clear
+		 sbr r20, $02;
+
+		 sbrc r18, 2 ; Skip if bit 4 in ADCL is clear
+		 sbr r20, $01;
+
+		 add ZL, r20
+
+		 lpm r23, z
+
+
 
 		 pop r16
 		 End_Task	3	;Turn output indicator pin Off
