@@ -1,5 +1,5 @@
 
-AVRASM ver. 2.1.57  H:\RealTimeControl\AVR Assignment\AVR Assignment\AVR Assignment.asm Tue Sep 08 13:16:42 2015
+AVRASM ver. 2.1.57  H:\RealTimeControl\AVR Assignment\AVR Assignment\AVR Assignment.asm Tue Sep 08 14:36:31 2015
 
 
 EQU  SIGNATURE_000 0000001e
@@ -510,8 +510,8 @@ EQU  INT_VECTORS_SIZE 00000013
 DSEG CounterSchedule 00000067
 DSEG PulseWidth   00000068
 CSEG Main         000002b1
-CSEG IntV0        0000030c
-CSEG ClockTick    000002cd
+CSEG IntV0        0000031a
+CSEG ClockTick    000002cf
 CSEG RPMLoad_Lookup 00000100
 CSEG FactorA_Lookup 00000108
 CSEG FactorB_Lookup 0000010a
@@ -534,6 +534,7 @@ CSEG d8u_3        000002ac
 EQU  ClockTick_Task 00000000
 EQU  UpTime       ffffffff
 CSEG System_Monitor 000002ae
-CSEG forever      000002c8
-CSEG Task_3       000002d4
-CSEG Task_1       00000310
+CSEG forever      000002ca
+CSEG MonitorTask  000002d6
+CSEG Task_3       000002e2
+CSEG Task_1       0000031e

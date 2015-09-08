@@ -64,6 +64,9 @@ Main:
 
 		;CBI DDRD, PD2		;I/O Setup
 		sbi PORTD,PD2
+
+		sbi DDRB, PB2
+		cbi PORTB, PB2 ; Turns on Pin2 of PortB. Note the negative logic
 		
 		ldi r16,(1<<INT0); int mask 0 set +  (1<<INT1) 
 		out GICR,r16
@@ -102,7 +105,7 @@ Main:
 		;********* Main infinite loop ********
 forever:
 		Start_Task UpTime
-		rcall Task_3
+		rcall MonitorTask
 		End_Task UpTime
 		rjmp forever 
 ;*****************End of program *****************
@@ -154,7 +157,28 @@ ClockTick:
 
 
 
+MonitorTask:
+		in r22, ADCL
+		
+		;Treat r18 (ADCL) as Fahrenheit and convert to celcius
 
+		ldi r17, 32
+
+		sub r22, r17
+
+		ldi r19, 9
+
+		clr r24
+		clr r23
+		clr r21
+		clr r20
+		;We divide by 9
+		rcall div24x24_24 ;r24:r23:r22 = r24:r23:r22 / r21:r20:r19
+
+		ldi r19, 5
+		mul r22, r19
+
+		RET
 
 
 
