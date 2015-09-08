@@ -2,7 +2,7 @@
  * Lab2.asm
  *
  *  Created: 4/08/2015 2:43:56 p.m.
- *   Author: xwan572
+ *   Author: xwan572 & ayeo722
  */ 
 
 
