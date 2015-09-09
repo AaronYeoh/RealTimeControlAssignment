@@ -1,9 +1,9 @@
 
-AVRASM ver. 2.1.57  H:\RealTimeControl\AVR Assignment\AVR Assignment\AVR Assignment.asm Tue Sep 08 14:36:31 2015
+AVRASM ver. 2.1.52  C:\Users\Mike\Documents\RealTimeControlAssignment\AVR Assignment\AVR Assignment\AVR Assignment.asm Wed Sep 09 13:25:01 2015
 
-[builtin](2): Including file 'C:\Program Files (x86)\Atmel\Atmel Toolchain\AVR Assembler\Native\2.1.1175\avrassembler\Include\m8def.inc'
-H:\RealTimeControl\AVR Assignment\AVR Assignment\AVR Assignment.asm(10): Including file 'C:\Program Files (x86)\Atmel\Atmel Toolchain\AVR Assembler\Native\2.1.1175\avrassembler\Include\m8def.inc'
-H:\RealTimeControl\AVR Assignment\AVR Assignment\AVR Assignment.asm(51): Including file 'H:\RealTimeControl\AVR Assignment\AVR Assignment\MECHENG313A.inc'
+[builtin](2): Including file 'C:\Program Files (x86)\Atmel\Atmel Studio 6.0\extensions\Atmel\AVRAssembler\2.1.51.64\AvrAssembler/Include\m8def.inc'
+C:\Users\Mike\Documents\RealTimeControlAssignment\AVR Assignment\AVR Assignment\AVR Assignment.asm(10): Including file 'C:\Program Files (x86)\Atmel\Atmel Studio 6.0\extensions\Atmel\AVRAssembler\2.1.51.64\AvrAssembler/Include\m8def.inc'
+C:\Users\Mike\Documents\RealTimeControlAssignment\AVR Assignment\AVR Assignment\AVR Assignment.asm(51): Including file 'C:\Users\Mike\Documents\RealTimeControlAssignment\AVR Assignment\AVR Assignment\MECHENG313A.inc'
                  
                  /*
                  
@@ -775,7 +775,7 @@ H:\RealTimeControl\AVR Assignment\AVR Assignment\AVR Assignment.asm(51): Includi
                  .org $00000					;Setting Origin Address
 000000 c2b0      		rjmp Main 			;Reset vector
                  .org INT0addr				;Setting Origin Address
-000001 c318      		rjmp IntV0 			;INT vector
+000001 c31a      		rjmp IntV0 			;INT vector
                  .org OVF0addr				;Setting Origin Address
 000009 c2c5      		rjmp ClockTick 		;ClockTick vector
                  
@@ -1379,125 +1379,131 @@ H:\RealTimeControl\AVR Assignment\AVR Assignment\AVR Assignment.asm(51): Includi
                  
 0002e1 9508      		RET
                  
+                 		//Treat r22? (ADCL) as Fluid Ounces water level input and convert the value to Litres
+                 		//L =us fl oz / 33.814
+                 		//L =uk fl oz / 35.195
+                 
+0002e2 e116      		ldi r17, low(33814)
+0002e3 e824      		ldi r18, high(33814)
                  
                  
                  ;***************** Start of Task3 *****************
-0002e2 9a8f
-0002e3 9a97      Task_3:	Start_Task 	3	;Turn output indicator pin On
+0002e4 9a8f
+0002e5 9a97      Task_3:	Start_Task 	3	;Turn output indicator pin On
                  		
-0002e4 930f      		 push r16
+0002e6 930f      		 push r16
                  
-0002e5 e0f2      		ldi ZH, high(RPMLoad_Lookup<<1)
-0002e6 e0e0      		ldi ZL, low(RPMLoad_Lookup<<1)
+0002e7 e0f2      		ldi ZH, high(RPMLoad_Lookup<<1)
+0002e8 e0e0      		ldi ZL, low(RPMLoad_Lookup<<1)
                  
                  		 ; Read 10-bit ADC conversion result ; optimisation possible
-0002e7 b124      		 in r18, ADCL
-0002e8 b135      		 in r19, ADCH
+0002e9 b124      		 in r18, ADCL
+0002ea b135      		 in r19, ADCH
                  
                  		 ;mov r18, r16 ; low
                  		 ;mov r19, r17 ; high
                  		 
                  		 ;RPM Level Lookup stored in r21
-0002e9 2744      		 clr r20
-0002ea fd27      		 sbrc r18, 7 ; Skip if bit 7 in ADCL is clear
-0002eb 6042      		 sbr r20, $02;
+0002eb 2744      		 clr r20
+0002ec fd27      		 sbrc r18, 7 ; Skip if bit 7 in ADCL is clear
+0002ed 6042      		 sbr r20, $02;
                  
-0002ec fd26      		 sbrc r18, 6 ; Skip if bit 6 in ADCL is clear
-0002ed 6041      		 sbr r20, $01;
+0002ee fd26      		 sbrc r18, 6 ; Skip if bit 6 in ADCL is clear
+0002ef 6041      		 sbr r20, $01;
                  
-0002ee e054      		 ldi r21, 4; store 4 in r20, used below
-0002ef 9f45      		 mul r20, r21; Multiply r20 (the ADC result) by 4 
+0002f0 e054      		 ldi r21, 4; store 4 in r20, used below
+0002f1 9f45      		 mul r20, r21; Multiply r20 (the ADC result) by 4 
                  
-0002f0 2d50      		 mov r21, r0 ; Move the result of the multiplication to r21
+0002f2 2d50      		 mov r21, r0 ; Move the result of the multiplication to r21
                  
                  		 ;Load lookup stored in r20
-0002f1 2744      		 clr r20
-0002f2 fd25      		 sbrc r18,  5; Skip if bit 5 in ADCL is clear
-0002f3 6042      		 sbr r20, $02;
+0002f3 2744      		 clr r20
+0002f4 fd25      		 sbrc r18,  5; Skip if bit 5 in ADCL is clear
+0002f5 6042      		 sbr r20, $02;
                  
-0002f4 fd24      		 sbrc r18, 4 ; Skip if bit 4 in ADCL is clear
-0002f5 6041      		 sbr r20, $01;
+0002f6 fd24      		 sbrc r18, 4 ; Skip if bit 4 in ADCL is clear
+0002f7 6041      		 sbr r20, $01;
                  
-0002f6 0f54      		 add r21, r20 ; Add the load to the previous RPM level
+0002f8 0f54      		 add r21, r20 ; Add the load to the previous RPM level
                  
-0002f7 0fe5      		 add ZL, r21
+0002f9 0fe5      		 add ZL, r21
                  
-0002f8 9164      		 lpm r22, z
+0002fa 9164      		 lpm r22, z
                  
                  
                  
                  		 //Factor A lookup
-0002f9 e0f2      		 ldi ZH, high(FactorA_Lookup<<1)
-0002fa e1e0      		 ldi ZL, low(FactorA_Lookup<<1)
+0002fb e0f2      		 ldi ZH, high(FactorA_Lookup<<1)
+0002fc e1e0      		 ldi ZL, low(FactorA_Lookup<<1)
                  
                  
-0002fb 2744      		 clr r20
-0002fc fd23      		 sbrc r18,  3; Skip if bit 3 in ADCL is clear
-0002fd 6042      		 sbr r20, $02;
+0002fd 2744      		 clr r20
+0002fe fd23      		 sbrc r18,  3; Skip if bit 3 in ADCL is clear
+0002ff 6042      		 sbr r20, $02;
                  
-0002fe fd22      		 sbrc r18, 2 ; Skip if bit 2 in ADCL is clear
-0002ff 6041      		 sbr r20, $01;
+000300 fd22      		 sbrc r18, 2 ; Skip if bit 2 in ADCL is clear
+000301 6041      		 sbr r20, $01;
                  
-000300 0fe4      		 add ZL, r20
+000302 0fe4      		 add ZL, r20
                  
-000301 9174      		 lpm r23, z
+000303 9174      		 lpm r23, z
                  
                  
                  		 //Factor B lookup
-000302 e0f2      		 ldi ZH, high(FactorB_Lookup<<1)
-000303 e1e4      		 ldi ZL, low(FactorB_Lookup<<1)
+000304 e0f2      		 ldi ZH, high(FactorB_Lookup<<1)
+000305 e1e4      		 ldi ZL, low(FactorB_Lookup<<1)
                  
                  
-000304 2744      		 clr r20
-000305 fd21      		 sbrc r18,  1; Skip if bit 1 in ADCL is clear
-000306 6042      		 sbr r20, $02;
+000306 2744      		 clr r20
+000307 fd21      		 sbrc r18,  1; Skip if bit 1 in ADCL is clear
+000308 6042      		 sbr r20, $02;
                  
-000307 fd20      		 sbrc r18, 0; Skip if bit 0 in ADCL is clear
-000308 6041      		 sbr r20, $01;
+000309 fd20      		 sbrc r18, 0; Skip if bit 0 in ADCL is clear
+00030a 6041      		 sbr r20, $01;
                  
-000309 0fe4      		 add ZL, r20
+00030b 0fe4      		 add ZL, r20
                  
-00030a 9184      		 lpm r24, z
+00030c 9184      		 lpm r24, z
                  
                  
                  		 //Calculate Pulse Width
                  
                  		 
-00030b 9f76      		 mul r23, r22
+00030d 9f76      		 mul r23, r22
                  
-00030c 2d70      		 mov r23,r0
+00030e 2d70      		 mov r23,r0
                  
-00030d 9f87      		 mul r24, r23 ; x FactorB
+00030f 9f87      		 mul r24, r23 ; x FactorB
                  
-00030e 2d71      		 mov r23, r1
-00030f 2d60      		 mov r22, r0
+000310 2d71      		 mov r23, r1
+000311 2d60      		 mov r22, r0
                  
-000310 e238      		 ldi r19, 40; divisor
+000312 e238      		 ldi r19, 40; divisor
                  
-000311 2788      		 clr r24;
-000312 2755      		 clr r21;
-000313 2744      		 clr r20;
+000313 2788      		 clr r24;
+000314 2755      		 clr r21;
+000315 2744      		 clr r20;
                  		 ;Finally we divide by 40
-000314 df72      		 rcall div24x24_24 ;r24:r23:r22 = r24:r23:r22 / r21:r20:r19
+000316 df70      		 rcall div24x24_24 ;r24:r23:r22 = r24:r23:r22 / r21:r20:r19
                  		 
-000315 9360 0068 		 sts PulseWidth, r22
+000317 9360 0068 		 sts PulseWidth, r22
                  
                  
-000317 910f      		 pop r16
-000318 9897      		 End_Task	3	;Turn output indicator pin Off
-000319 9508      		RET
+000319 910f      		 pop r16
+00031a 9897      		 End_Task	3	;Turn output indicator pin Off
+00031b 9508      		RET
                  ;***************** End Task3 **********************
                  
                  
                  
                  ;***************** Start of External Interrupt *****************
                  IntV0:
-00031a 930f      		push r16
+00031c 930f      		push r16
                  		;Done
-00031b e001      		ldi r16 , 1
+00031d e001      		ldi r16 , 1
                  ;		sts FlagPD2, r16 ;Set the flag to 1. This is read in the ClockTick ISR
-00031c 910f      		pop r16
-00031d 9518      		reti			;Return from Interurpt
+00031e 910f      		pop r16
+00031f 9518      		reti			;Return from Interurpt
                  ;***************** End External Interrupt **********************
                  
                  
@@ -1513,35 +1519,35 @@ H:\RealTimeControl\AVR Assignment\AVR Assignment\AVR Assignment.asm(51): Includi
                  
                  
                  ;***************** Start of Task1 *****************
-00031e 9a8d
-00031f 9a95      Task_1:	Start_Task 	1 	;Turn output indicator pin On
-000320 930f      		push r16
+000320 9a8d
+000321 9a95      Task_1:	Start_Task 	1 	;Turn output indicator pin On
+000322 930f      		push r16
                  		;********* Write Task 1 here ********
                  		;ldi r22, low(Mass); load low bit 
                  		;ldi r23, high(Mass); low high bit
                  		;ldi r21, Velocity; load velocity
-000321 9f55      		mul r21, r21; mul has to 
-000322 2d51      		mov r21, r1
-000323 2d40      		mov r20, r0
-000324 dee2      		rcall mul16x16_32; r19:r18:r17:r16 = r23:r22 * r21:r20
-000325 2f82      		mov r24, r18
-000326 2f71      		mov r23, r17
-000327 2f60      		mov r22, r16
-000328 e032      		ldi r19, 2;
-000329 e050      		ldi r21, 0
-00032a e040      		ldi r20, 0
-00032b 2722      		clr r18
-00032c 2711      		clr r17
-00032d 2700      		clr r16
-00032e df58      		rcall div24x24_24; r24:r23:r22 = r24:r23:r22 / r21:r20:r19
+000323 9f55      		mul r21, r21; mul has to 
+000324 2d51      		mov r21, r1
+000325 2d40      		mov r20, r0
+000326 dee0      		rcall mul16x16_32; r19:r18:r17:r16 = r23:r22 * r21:r20
+000327 2f82      		mov r24, r18
+000328 2f71      		mov r23, r17
+000329 2f60      		mov r22, r16
+00032a e032      		ldi r19, 2;
+00032b e050      		ldi r21, 0
+00032c e040      		ldi r20, 0
+00032d 2722      		clr r18
+00032e 2711      		clr r17
+00032f 2700      		clr r16
+000330 df56      		rcall div24x24_24; r24:r23:r22 = r24:r23:r22 / r21:r20:r19
                  		;ldi r19, Distance
                  		;rcall div24x24_24;
                  
                  
                  		;************************************
-00032f 910f      		pop r16
-000330 9895      		End_Task	1	;Turn output indicator pin Off
-000331 9518      		RETI
+000331 910f      		pop r16
+000332 9895      		End_Task	1	;Turn output indicator pin Off
+000333 9518      		RETI
                  ;***************** End Task1 **********************
 
 
@@ -1562,7 +1568,7 @@ counted separately from r26..r31 here.
 "ATmega8" register use summary:
 r0 :  35 r1 :  31 r2 :  41 r3 :   0 r4 :   5 r5 :   4 r6 :   0 r7 :   0 
 r8 :   0 r9 :   0 r10:   0 r11:   0 r12:   0 r13:   0 r14:   0 r15:   0 
-r16:  43 r17:  32 r18:  41 r19:  44 r20:  43 r21:  29 r22:  27 r23:  25 
+r16:  43 r17:  33 r18:  42 r19:  44 r20:  43 r21:  29 r22:  27 r23:  25 
 r24:   6 r25:   2 r26:   0 r27:   0 r28:   0 r29:   0 r30:   6 r31:   3 
 x  :   0 y  :   0 z  :   3 
 Registers used: 18 out of 35 (51.4%)
@@ -1577,7 +1583,7 @@ bset  :   0 bst   :   0 cbi   :   6 cbr   :   0 clc   :   2 clh   :   0
 cli   :   0 cln   :   0 clr   :  23 cls   :   0 clt   :   0 clv   :   0 
 clz   :   0 com   :   0 cp    :   0 cpc   :   0 cpi   :   0 cpse  :   0 
 dec   :   2 eor   :   0 fmul  :   3 fmuls :   3 fmulsu:   6 icall :   0 
-ijmp  :   0 in    :   3 inc   :   0 ld    :   0 ldd   :   0 ldi   :  28 
+ijmp  :   0 in    :   3 inc   :   0 ld    :   0 ldd   :   0 ldi   :  30 
 lds   :   0 lpm   :   6 lsl   :   0 lsr   :   0 mov   :   9 movw  :   9 
 mul   :  15 muls  :   3 mulsu :   6 neg   :   0 nop   :   0 or    :   0 
 ori   :   0 out   :  10 pop   :   3 push  :   3 rcall :   7 ret   :  14 
@@ -1592,7 +1598,7 @@ Instructions used: 35 out of 110 (31.8%)
 "ATmega8" memory use summary [bytes]:
 Segment   Begin    End      Code   Data   Used    Size   Use%
 ---------------------------------------------------------------
-[.cseg] 0x000000 0x000664    618     24    642    8192   7.8%
+[.cseg] 0x000000 0x000668    622     24    646    8192   7.9%
 [.dseg] 0x000060 0x000069      0      2      2    1024   0.2%
 [.eseg] 0x000000 0x000000      0      0      0     512   0.0%
 

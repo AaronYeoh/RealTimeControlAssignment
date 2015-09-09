@@ -178,8 +178,39 @@ MonitorTask:
 		ldi r19, 5
 		mul r22, r19
 
-		RET
+		push r22
 
+		//RET
+		
+
+		//Treat r22? (ADCL) as Fluid Ounces water level input and convert the value to Litres
+		//L =us fl oz / 33.814
+		//L =uk fl oz / 35.195
+
+		in r22, ADCL
+
+		ldi r20, low(1000)
+		ldi r21, high(1000)
+		clr r23
+
+		rcall mul16x16_32 ;r19:r18:r17:r16 = r23:r22 * r21:r20
+
+		
+		ldi r19, low(33814)
+		ldi r20, high(33814)
+		clr r21
+
+		mov r24, r18
+		mov r23, r17
+		mov r22, r16
+
+		rcall div24x24_24 ;r24:r23:r22 = r24:r23:r22 / r21:r20:r19
+
+		mov r23, r22
+		
+		pop r22
+
+		RET
 
 
 ;***************** Start of Task3 *****************
@@ -305,7 +336,44 @@ IntV0:
 
 
 
+;***************** Collision Detection*****************
+Task_2:	Start_Task 	2 	;Turn output indicator pin On
+		push r16
+		;********* Write Task  here ********
+		in r22, ADCL
+		in r23, ADCH
+		clr r20
 
+		;obtain 2 MSB of ADCL, store in r20
+		sbrc r22,  7; Skip if bit 1 in ADCL is clear
+		sbr r20, $04;
+
+		sbrc r22, 6; Skip if bit 0 in ADCL is clear
+		sbr r20, $03;
+
+		;obtain 2 LSB of ADCH, store in r20
+		sbrc r22,  1; Skip if bit 1 in ADCH is clear
+		sbr r20, $02;
+
+		sbrc r22, 0; Skip if bit 0 in ADCH is clear
+		sbr r20, $01;
+
+		cpi r20, 4
+		brsh collision
+		sbi PORTD, PD6
+
+
+		collision:
+		cbi PORTD, PD6
+
+		RET
+		
+
+		;************************************
+		pop r16
+		End_Task	1	;Turn output indicator pin Off
+		RETI
+;***************** End Task1 **********************
 
 
 
