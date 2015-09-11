@@ -32,6 +32,8 @@ ld r1,Z ; Load VAR1 into register 1
 		rjmp Main 			;Reset vector
 .org INT0addr				;Setting Origin Address
 		rjmp IntV0 			;INT vector
+.org ADCCaddr
+		rjmp ADCF0
 .org OVF0addr				;Setting Origin Address
 		rjmp ClockTick 		;ClockTick vector
 
@@ -65,8 +67,8 @@ Main:
 		;CBI DDRD, PD2		;I/O Setup
 		sbi PORTD,PD2
 
-		sbi DDRB, PB2
-		cbi PORTB, PB2 ; Turns on Pin2 of PortB. Note the negative logic
+		sbi DDRB, PB6
+		sbi PORTB, PB2 ; Turns off Pin2 of PortB. Note the negative logic. For the collision detection
 		
 		ldi r16,(1<<INT0); int mask 0 set +  (1<<INT1) 
 		out GICR,r16
@@ -100,7 +102,7 @@ Main:
 		ldi r16 , 1
 		sts CounterSchedule, r16
 
-		;sei ; enable interrupts
+		sei ; enable interrupts
 
 		;********* Main infinite loop ********
 forever:
@@ -338,8 +340,8 @@ IntV0:
 
 
 ;***************** Collision Detection*****************
-Task_2:	Start_Task 	2 	;Turn output indicator pin On
-		push r16
+ADCF0:	Start_Task 	2 	;Turn output indicator pin On
+		
 		;********* Write Task  here ********
 		in r22, ADCL
 		in r23, ADCH
@@ -347,10 +349,10 @@ Task_2:	Start_Task 	2 	;Turn output indicator pin On
 
 		;obtain 2 LSB of ADCH, store in r20
 		sbrc r23,  1; Skip if bit 1 in ADCH is clear
-		sbr r20, $04;
+		sbr r20, $08;
 
 		sbrc r23, 0; Skip if bit 0 in ADCH is clear
-		sbr r20, $03;
+		sbr r20, $04;
 
 
 		;obtain 2 MSB of ADCL, store in r20
@@ -363,21 +365,24 @@ Task_2:	Start_Task 	2 	;Turn output indicator pin On
 		
 		cpi r20, 4
 		brsh collision
-		sbi PORTD, PD6
-		RET
+		sbi PORTB, PB6
+
+		
+		RETI
 
 
 		collision:
-		cbi PORTD, PD6 ;Collision has occurred. Turn on LED at PD6
+		cbi PORTB, PB6 ;Collision has occurred. Turn on LED at PB6
 
-		RET
+		
+		RETI
 		
 		;end of collision
 		
 
 		;************************************
-		pop r16
-		End_Task	1	;Turn output indicator pin Off
+		
+		End_Task	2	;Turn output indicator pin Off
 		RETI
 ;***************** End Task1 **********************
 

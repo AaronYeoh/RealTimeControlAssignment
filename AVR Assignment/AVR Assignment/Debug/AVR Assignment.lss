@@ -1,9 +1,9 @@
 
-AVRASM ver. 2.1.52  C:\Users\Mike\Documents\RealTimeControlAssignment\AVR Assignment\AVR Assignment\AVR Assignment.asm Fri Sep 11 15:59:43 2015
+AVRASM ver. 2.1.52  C:\Users\Mike\Documents\RealTimeControlAssignment\AVR Assignment\AVR Assignment\AVR Assignment.asm Fri Sep 11 16:38:51 2015
 
 [builtin](2): Including file 'C:\Program Files (x86)\Atmel\Atmel Studio 6.0\extensions\Atmel\AVRAssembler\2.1.51.64\AvrAssembler/Include\m8def.inc'
 C:\Users\Mike\Documents\RealTimeControlAssignment\AVR Assignment\AVR Assignment\AVR Assignment.asm(10): Including file 'C:\Program Files (x86)\Atmel\Atmel Studio 6.0\extensions\Atmel\AVRAssembler\2.1.51.64\AvrAssembler/Include\m8def.inc'
-C:\Users\Mike\Documents\RealTimeControlAssignment\AVR Assignment\AVR Assignment\AVR Assignment.asm(51): Including file 'C:\Users\Mike\Documents\RealTimeControlAssignment\AVR Assignment\AVR Assignment\MECHENG313A.inc'
+C:\Users\Mike\Documents\RealTimeControlAssignment\AVR Assignment\AVR Assignment\AVR Assignment.asm(53): Including file 'C:\Users\Mike\Documents\RealTimeControlAssignment\AVR Assignment\AVR Assignment\MECHENG313A.inc'
                  
                  /*
                  
@@ -776,6 +776,8 @@ C:\Users\Mike\Documents\RealTimeControlAssignment\AVR Assignment\AVR Assignment\
 000000 c2b0      		rjmp Main 			;Reset vector
                  .org INT0addr				;Setting Origin Address
 000001 c328      		rjmp IntV0 			;INT vector
+                 .org ADCCaddr
+00000e c31f      		rjmp ADCF0
                  .org OVF0addr				;Setting Origin Address
 000009 c2c5      		rjmp ClockTick 		;ClockTick vector
                  
@@ -1262,42 +1264,42 @@ C:\Users\Mike\Documents\RealTimeControlAssignment\AVR Assignment\AVR Assignment\
                  		;CBI DDRD, PD2		;I/O Setup
 0002b5 9a92      		sbi PORTD,PD2
                  
-0002b6 9aba      		sbi DDRB, PB2
-0002b7 98c2      		cbi PORTB, PB2 ; Turns on Pin2 of PortB. Note the negative logic
+0002b6 9abe      		sbi DDRB, PB6
+                 		;cbi PORTB, PB2 ; Turns on Pin2 of PortB. Note the negative logic
                  		
-0002b8 e400      		ldi r16,(1<<INT0); int mask 0 set +  (1<<INT1) 
-0002b9 bf0b      		out GICR,r16
-0002ba e002      		ldi r16,(1<<ISC01)		; interrupt t0 on rising edge
-0002bb bf05      		out MCUCR,r16		;Interrupt Setup
+0002b7 e400      		ldi r16,(1<<INT0); int mask 0 set +  (1<<INT1) 
+0002b8 bf0b      		out GICR,r16
+0002b9 e002      		ldi r16,(1<<ISC01)		; interrupt t0 on rising edge
+0002ba bf05      		out MCUCR,r16		;Interrupt Setup
                  		
                  
                  		;********* ADC ********
                  		; set MUX to channel 2, left adjust the result, AREF taken from AVCC
-0002bc e001      		ldi r16, (1<<MUX0) ; ADMUX channel 2, AREF from AVCC PORTC
-0002bd b907      		out ADMUX,r16
+0002bb e001      		ldi r16, (1<<MUX0) ; ADMUX channel 2, AREF from AVCC PORTC
+0002bc b907      		out ADMUX,r16
                  		; switch AD conversion on, start conversion, divider rate = 16
-0002be ee04      		ldi r16, (1<<ADEN)|(1<<ADSC)|(1<<ADPS2)|(1<<ADFR)
-0002bf b906      		out ADCSRA, r16
+0002bd ee0c      		ldi r16, (1<<ADEN)|(1<<ADSC)|(1<<ADPS2)|(1<<ADFR)| (1<<ADIE)
+0002be b906      		out ADCSRA, r16
                  
                  
-0002c0 98a1      		cbi DDRC,PC1		
+0002bf 98a1      		cbi DDRC,PC1		
                  
                  		;********* ClockTick 8-bit Timer/Counter 0 *******      
-0002c1 e002      		ldi r16, (1<<CS01)      ; Start Counter 0      
-0002c2 bf03            	out TCCR0, r16			; Timer Clock = Sys Clock (1MHz) / 8 (prescaler)
-0002c3 e001      		ldi r16, (1<<TOIE0)     ; Enable interru       
-0002c4 bf09      		out TIMSK, r16			; Enable Timer Overflow interrupt
+0002c0 e002      		ldi r16, (1<<CS01)      ; Start Counter 0      
+0002c1 bf03            	out TCCR0, r16			; Timer Clock = Sys Clock (1MHz) / 8 (prescaler)
+0002c2 e001      		ldi r16, (1<<TOIE0)     ; Enable interru       
+0002c3 bf09      		out TIMSK, r16			; Enable Timer Overflow interrupt
                  
-0002c5 e404      		ldi	r16, 68				; MaxValue = TOVck (1.5ms or your Cal time) * Pck (1MHz) / 8 (prescaler)
-0002c6 bf02      		out TCNT0, r16			; TCNT0Value = 255 - MaxValue	
+0002c4 e404      		ldi	r16, 68				; MaxValue = TOVck (1.5ms or your Cal time) * Pck (1MHz) / 8 (prescaler)
+0002c5 bf02      		out TCNT0, r16			; TCNT0Value = 255 - MaxValue	
                  		
                  
                  
                  
-0002c7 e001      		ldi r16 , 1
-0002c8 9300 0067 		sts CounterSchedule, r16
+0002c6 e001      		ldi r16 , 1
+0002c7 9300 0067 		sts CounterSchedule, r16
                  
-                 		;sei ; enable interrupts
+0002c9 9478      		sei ; enable interrupts
                  
                  		;********* Main infinite loop ********
                  forever:
@@ -1539,57 +1541,50 @@ C:\Users\Mike\Documents\RealTimeControlAssignment\AVR Assignment\AVR Assignment\
                  
                  ;***************** Collision Detection*****************
 00032e 9a8e
-00032f 9a96      Task_2:	Start_Task 	2 	;Turn output indicator pin On
-000330 930f      		push r16
+00032f 9a96      ADCF0:	Start_Task 	2 	;Turn output indicator pin On
+                 		
                  		;********* Write Task  here ********
-000331 b164      		in r22, ADCL
-000332 b175      		in r23, ADCH
-000333 2744      		clr r20
-                 
-                 		;obtain 2 MSB of ADCL, store in r20
-000334 fd67      		sbrc r22,  7; Skip if bit 1 in ADCL is clear
-000335 6044      		sbr r20, $04;
-                 
-000336 fd66      		sbrc r22, 6; Skip if bit 0 in ADCL is clear
-000337 6043      		sbr r20, $03;
+000330 b164      		in r22, ADCL
+000331 b175      		in r23, ADCH
+000332 2744      		clr r20
                  
                  		;obtain 2 LSB of ADCH, store in r20
-000338 fd61      		sbrc r22,  1; Skip if bit 1 in ADCH is clear
-000339 6042      		sbr r20, $02;
+000333 fd71      		sbrc r23,  1; Skip if bit 1 in ADCH is clear
+000334 6048      		sbr r20, $08;
                  
-00033a fd60      		sbrc r22, 0; Skip if bit 0 in ADCH is clear
-00033b 6041      		sbr r20, $01;
+000335 fd70      		sbrc r23, 0; Skip if bit 0 in ADCH is clear
+000336 6044      		sbr r20, $04;
                  
-00033c 3044      		cpi r20, 4
-00033d f410      		brsh collision
-00033e 9a96      		sbi PORTD, PD6
-00033f 9508      		RET
+                 
+                 		;obtain 2 MSB of ADCL, store in r20
+000337 fd67      		sbrc r22,  7; Skip if bit 7 in ADCL is clear
+000338 6042      		sbr r20, $02;
+                 
+000339 fd66      		sbrc r22, 6; Skip if bit 6 in ADCL is clear
+00033a 6041      		sbr r20, $01;
+                 
+                 		
+00033b 3044      		cpi r20, 4
+00033c f410      		brsh collision
+00033d 9ac6      		sbi PORTB, PB6
+                 
+                 		
+00033e 9518      		RETI
                  
                  
                  		collision:
-000340 9896      		cbi PORTD, PD6
+00033f 98c6      		cbi PORTB, PB6 ;Collision has occurred. Turn on LED at PB6
                  
-000341 9508      		RET
+                 		
+000340 9518      		RETI
                  		
                  		;end of collision
-                 
-                 
-                 
-                 
-                 
-                 
-                 
-                 
-                 
-                 
-                 
-                 
-                 
+                 		
                  
                  		;************************************
-000342 910f      		pop r16
-000343 9895      		End_Task	1	;Turn output indicator pin Off
-000344 9518      		RETI
+                 		
+000341 9896      		End_Task	2	;Turn output indicator pin Off
+000342 9518      		RETI
                  ;***************** End Task1 **********************
                  
                  
@@ -1598,35 +1593,35 @@ C:\Users\Mike\Documents\RealTimeControlAssignment\AVR Assignment\AVR Assignment\
                  
                  
                  ;***************** Start of Task1 *****************
-000345 9a8d
-000346 9a95      Task_1:	Start_Task 	1 	;Turn output indicator pin On
-000347 930f      		push r16
+000343 9a8d
+000344 9a95      Task_1:	Start_Task 	1 	;Turn output indicator pin On
+000345 930f      		push r16
                  		;********* Write Task 1 here ********
                  		;ldi r22, low(Mass); load low bit 
                  		;ldi r23, high(Mass); low high bit
                  		;ldi r21, Velocity; load velocity
-000348 9f55      		mul r21, r21; mul has to 
-000349 2d51      		mov r21, r1
-00034a 2d40      		mov r20, r0
-00034b debb      		rcall mul16x16_32; r19:r18:r17:r16 = r23:r22 * r21:r20
-00034c 2f82      		mov r24, r18
-00034d 2f71      		mov r23, r17
-00034e 2f60      		mov r22, r16
-00034f e032      		ldi r19, 2;
-000350 e050      		ldi r21, 0
-000351 e040      		ldi r20, 0
-000352 2722      		clr r18
-000353 2711      		clr r17
-000354 2700      		clr r16
-000355 df31      		rcall div24x24_24; r24:r23:r22 = r24:r23:r22 / r21:r20:r19
+000346 9f55      		mul r21, r21; mul has to 
+000347 2d51      		mov r21, r1
+000348 2d40      		mov r20, r0
+000349 debd      		rcall mul16x16_32; r19:r18:r17:r16 = r23:r22 * r21:r20
+00034a 2f82      		mov r24, r18
+00034b 2f71      		mov r23, r17
+00034c 2f60      		mov r22, r16
+00034d e032      		ldi r19, 2;
+00034e e050      		ldi r21, 0
+00034f e040      		ldi r20, 0
+000350 2722      		clr r18
+000351 2711      		clr r17
+000352 2700      		clr r16
+000353 df33      		rcall div24x24_24; r24:r23:r22 = r24:r23:r22 / r21:r20:r19
                  		;ldi r19, Distance
                  		;rcall div24x24_24;
                  
                  
                  		;************************************
-000356 910f      		pop r16
-000357 9895      		End_Task	1	;Turn output indicator pin Off
-000358 9518      		RETI
+000354 910f      		pop r16
+000355 9895      		End_Task	1	;Turn output indicator pin Off
+000356 9518      		RETI
                  ;***************** End Task1 **********************
 
 
@@ -1647,7 +1642,7 @@ counted separately from r26..r31 here.
 "ATmega8" register use summary:
 r0 :  36 r1 :  31 r2 :  41 r3 :   0 r4 :   5 r5 :   4 r6 :   0 r7 :   0 
 r8 :   0 r9 :   0 r10:   0 r11:   0 r12:   0 r13:   0 r14:   0 r15:   0 
-r16:  46 r17:  33 r18:  42 r19:  45 r20:  51 r21:  31 r22:  38 r23:  29 
+r16:  44 r17:  33 r18:  42 r19:  45 r20:  51 r21:  31 r22:  36 r23:  31 
 r24:   7 r25:   2 r26:   0 r27:   0 r28:   0 r29:   0 r30:   6 r31:   3 
 x  :   0 y  :   0 z  :   3 
 Registers used: 18 out of 35 (51.4%)
@@ -1658,17 +1653,17 @@ andi  :   0 asr   :   0 bclr  :   0 bld   :   0 brbc  :   0 brbs  :   0
 brcc  :   2 brcs  :   0 breq  :   0 brge  :   0 brhc  :   0 brhs  :   0 
 brid  :   0 brie  :   0 brlo  :   0 brlt  :   0 brmi  :   0 brne  :   2 
 brpl  :   0 brsh  :   1 brtc  :   0 brts  :   0 brvc  :   0 brvs  :   0 
-bset  :   0 bst   :   0 cbi   :   8 cbr   :   0 clc   :   2 clh   :   0 
+bset  :   0 bst   :   0 cbi   :   7 cbr   :   0 clc   :   2 clh   :   0 
 cli   :   0 cln   :   0 clr   :  26 cls   :   0 clt   :   0 clv   :   0 
 clz   :   0 com   :   0 cp    :   0 cpc   :   0 cpi   :   1 cpse  :   0 
 dec   :   2 eor   :   0 fmul  :   3 fmuls :   3 fmulsu:   6 icall :   0 
 ijmp  :   0 in    :   6 inc   :   0 ld    :   0 ldd   :   0 ldi   :  32 
 lds   :   0 lpm   :   6 lsl   :   0 lsr   :   0 mov   :  14 movw  :   9 
 mul   :  15 muls  :   3 mulsu :   6 neg   :   0 nop   :   0 or    :   0 
-ori   :   0 out   :  10 pop   :   5 push  :   5 rcall :   9 ret   :  16 
-reti  :   4 rjmp  :   8 rol   :   8 ror   :   0 sbc   :  14 sbci  :   0 
+ori   :   0 out   :  10 pop   :   4 push  :   4 rcall :   9 ret   :  14 
+reti  :   6 rjmp  :   9 rol   :   8 ror   :   0 sbc   :  14 sbci  :   0 
 sbi   :  13 sbic  :   0 sbis  :   0 sbiw  :   0 sbr   :  12 sbrc  :  12 
-sbrs  :   0 sec   :   2 seh   :   0 sei   :   1 sen   :   0 ser   :   0 
+sbrs  :   0 sec   :   2 seh   :   0 sei   :   2 sen   :   0 ser   :   0 
 ses   :   0 set   :   0 sev   :   0 sez   :   0 sleep :   0 spm   :   0 
 st    :   0 std   :   0 sts   :   2 sub   :   5 subi  :   0 swap  :   0 
 tst   :   0 wdr   :   0 
@@ -1677,7 +1672,7 @@ Instructions used: 37 out of 110 (33.6%)
 "ATmega8" memory use summary [bytes]:
 Segment   Begin    End      Code   Data   Used    Size   Use%
 ---------------------------------------------------------------
-[.cseg] 0x000000 0x0006b2    696     24    720    8192   8.8%
+[.cseg] 0x000000 0x0006ae    694     24    718    8192   8.8%
 [.dseg] 0x000060 0x000069      0      2      2    1024   0.2%
 [.eseg] 0x000000 0x000000      0      0      0     512   0.0%
 

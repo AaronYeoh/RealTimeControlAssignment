@@ -1,5 +1,5 @@
 
-AVRASM ver. 2.1.52  C:\Users\Mike\Documents\RealTimeControlAssignment\AVR Assignment\AVR Assignment\AVR Assignment.asm Fri Sep 11 15:59:43 2015
+AVRASM ver. 2.1.52  C:\Users\Mike\Documents\RealTimeControlAssignment\AVR Assignment\AVR Assignment\AVR Assignment.asm Fri Sep 11 16:38:51 2015
 
 
 EQU  SIGNATURE_000 0000001e
@@ -511,6 +511,7 @@ DSEG CounterSchedule 00000067
 DSEG PulseWidth   00000068
 CSEG Main         000002b1
 CSEG IntV0        0000032a
+CSEG ADCF0        0000032e
 CSEG ClockTick    000002cf
 CSEG RPMLoad_Lookup 00000100
 CSEG FactorA_Lookup 00000108
@@ -537,6 +538,5 @@ CSEG System_Monitor 000002ae
 CSEG forever      000002ca
 CSEG MonitorTask  000002d6
 CSEG Task_3       000002f2
-CSEG Task_2       0000032e
-CSEG collision    00000340
-CSEG Task_1       00000345
+CSEG collision    0000033f
+CSEG Task_1       00000343
