@@ -79,7 +79,7 @@ Main:
 		ldi r16, (1<<MUX0) ; ADMUX channel 2, AREF from AVCC PORTC
 		out ADMUX,r16
 		; switch AD conversion on, start conversion, divider rate = 16
-		ldi r16, (1<<ADEN)|(1<<ADSC)|(1<<ADPS2)|(1<<ADFR)
+		ldi r16, (1<<ADEN)|(1<<ADSC)|(1<<ADPS2)|(1<<ADFR)| (1<<ADIE)
 		out ADCSRA, r16
 
 
@@ -178,10 +178,11 @@ MonitorTask:
 		ldi r19, 5
 		mul r22, r19
 
+		mov r22, r0
+
 		push r22
 
-		//RET
-		
+				
 
 		//Treat r22? (ADCL) as Fluid Ounces water level input and convert the value to Litres
 		//L =us fl oz / 33.814
@@ -344,29 +345,34 @@ Task_2:	Start_Task 	2 	;Turn output indicator pin On
 		in r23, ADCH
 		clr r20
 
-		;obtain 2 MSB of ADCL, store in r20
-		sbrc r22,  7; Skip if bit 1 in ADCL is clear
+		;obtain 2 LSB of ADCH, store in r20
+		sbrc r23,  1; Skip if bit 1 in ADCH is clear
 		sbr r20, $04;
 
-		sbrc r22, 6; Skip if bit 0 in ADCL is clear
+		sbrc r23, 0; Skip if bit 0 in ADCH is clear
 		sbr r20, $03;
 
-		;obtain 2 LSB of ADCH, store in r20
-		sbrc r22,  1; Skip if bit 1 in ADCH is clear
+
+		;obtain 2 MSB of ADCL, store in r20
+		sbrc r22,  7; Skip if bit 7 in ADCL is clear
 		sbr r20, $02;
 
-		sbrc r22, 0; Skip if bit 0 in ADCH is clear
+		sbrc r22, 6; Skip if bit 6 in ADCL is clear
 		sbr r20, $01;
 
+		
 		cpi r20, 4
 		brsh collision
 		sbi PORTD, PD6
+		RET
 
 
 		collision:
-		cbi PORTD, PD6
+		cbi PORTD, PD6 ;Collision has occurred. Turn on LED at PD6
 
 		RET
+		
+		;end of collision
 		
 
 		;************************************
