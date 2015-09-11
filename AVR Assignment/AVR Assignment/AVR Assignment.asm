@@ -398,7 +398,7 @@ Task_1:	Start_Task 	1 	;Turn output indicator pin On
 		;ldi r22, low(Mass); load low bit 
 		;ldi r23, high(Mass); low high bit
 		;ldi r21, Velocity; load velocity
-		mul r21, r21; mul has to 
+		mul r21, r21; mul has to
 		mov r21, r1
 		mov r20, r0
 		rcall mul16x16_32; r19:r18:r17:r16 = r23:r22 * r21:r20
