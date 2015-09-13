@@ -1,5 +1,9 @@
 /*
  * Lab2.asm
+ *	DOOR LED - PB2
+ *	DOOR TOGGLE SWITCH - PD2 (Switch 1 on STK500)
+ *  
+ *	COLLISION LED - PB4
  *
  *  Created: 4/08/2015 2:43:56 p.m.
  *   Author: xwan572 & ayeo722
@@ -31,7 +35,7 @@ ld r1,Z ; Load VAR1 into register 1
 .org $00000					;Setting Origin Address
 		rjmp Main 			;Reset vector
 .org INT0addr				;Setting Origin Address
-		rjmp IntV0 			;INT vector
+		rjmp IntV0 			;INT vector - for toggling the door state
 .org ADCCaddr
 		rjmp ADCF0
 .org OVF0addr				;Setting Origin Address
@@ -65,10 +69,14 @@ Main:
 			
 
 		;CBI DDRD, PD2		;I/O Setup
-		sbi PORTD,PD2
+		;sbi PORTD,PD2		; Test code. Turns on an LED
 
-		sbi DDRB, PB6
+		;Set the DDR for PORTB, allowing for us to write out
+		sbi DDRB, PB2  ;
+		sbi DDRB, PB4
+
 		sbi PORTB, PB2 ; Turns off Pin2 of PortB. Note the negative logic. For the collision detection
+		sbi PORTB, PB4	; Turns off Pin4 of PortB. For the door indicator. Door initialised as shut.
 		
 		ldi r16,(1<<INT0); int mask 0 set +  (1<<INT1) 
 		out GICR,r16
@@ -325,16 +333,28 @@ Task_3:	Start_Task 	3	;Turn output indicator pin On
 
 
 ;***************** Start of External Interrupt *****************
+; Car door status switcher ISR - Soft Real Time   ;Done!
+; DOOR OPEN LIGHT LED PB4
 IntV0:
 		push r16
-		;Done
-		ldi r16 , 1
-;		sts FlagPD2, r16 ;Set the flag to 1. This is read in the ClockTick ISR
+		sei ; Enable interrupts.
+
+		;Check the PB2 bit. If it is set, the door WAS shut (LED off) and it's now open. We want to turn ON the LED. 
+		sbic PORTB, PB2
+		jmp door_shut
+
+		;if door was open (PB4 == 0), it is shut now
+		
+		sbi PORTB, PB2  ;SET the door LED - LED is OFF
+		RETI			;Return from Interurpt
+
+		door_shut:
+		;if door was shut, we set it as open
+		cbi PORTB, PB2	;Clear the door LED - LED is ON 
+
 		pop r16
-		reti			;Return from Interurpt
+		RETI			;Return from Interurpt
 ;***************** End External Interrupt **********************
-
-
 
 
 
@@ -365,16 +385,14 @@ ADCF0:	Start_Task 	2 	;Turn output indicator pin On
 		
 		cpi r20, 4
 		brsh collision
-		sbi PORTB, PB6
-
-		
+		sbi PORTB, PB4 ;Collision has NOT occurred. Turn off LED at PB4 by setting the bit
+				
 		RETI
 
 
 		collision:
-		cbi PORTB, PB6 ;Collision has occurred. Turn on LED at PB6
-
-		
+		cbi PORTB, PB4 ;Collision has occurred. Turn on LED at PB4 by clearing the bit
+				
 		RETI
 		
 		;end of collision
