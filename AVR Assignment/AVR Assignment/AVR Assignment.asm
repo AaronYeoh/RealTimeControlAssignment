@@ -36,8 +36,8 @@ ld r1,Z ; Load VAR1 into register 1
 		rjmp Main 			;Reset vector
 .org INT0addr				;Setting Origin Address
 		rjmp IntV0 			;INT vector - for toggling the door state
-.org ADCCaddr
-		rjmp ADCF0
+;.org ADCCaddr
+;		rjmp ADCF0
 .org OVF0addr				;Setting Origin Address
 		rjmp ClockTick 		;ClockTick vector
 
@@ -122,19 +122,6 @@ forever:
 
 
 
-
-
-
-
-;***************** Start of External Interrupt *****************
-IntV0:
-		push r16
-		;Done
-		ldi r16 , 1
-		sts FlagPD2, r16 ;Set the flag to 1. This is read in the ClockTick ISR
-		pop r16
-		reti			;Return from Interurpt
-;***************** End External Interrupt **********************
 
 
 
@@ -367,13 +354,14 @@ Task_3:	Start_Task 	3	;Turn output indicator pin On
 ;***************** Start of External Interrupt *****************
 ; Car door status switcher ISR - Soft Real Time   ;Done!
 ; DOOR OPEN LIGHT LED PB4
+
 IntV0:
 		push r16
 		sei ; Enable interrupts.
 
 		;Check the PB2 bit. If it is set, the door WAS shut (LED off) and it's now open. We want to turn ON the LED. 
 		sbic PORTB, PB2
-		jmp door_shut
+		rjmp door_shut
 
 		;if door was open (PB4 == 0), it is shut now
 		

@@ -1,9 +1,9 @@
 
-AVRASM ver. 2.1.52  C:\Users\Aaron\Documents\RealTimeControlAssignment\AVR Assignment\AVR Assignment\AVR Assignment.asm Sun Sep 13 22:25:26 2015
+AVRASM ver. 2.1.57  \\engad.foe.auckland.ac.nz\engdfs\Home\ayeo722\Documents\RealTimeControlAssignment\AVR Assignment\AVR Assignment\AVR Assignment.asm Mon Sep 14 14:22:15 2015
 
-[builtin](2): Including file 'C:\Program Files (x86)\Atmel\Atmel Studio 6.0\extensions\Atmel\AVRAssembler\2.1.51.64\AvrAssembler/Include\m8def.inc'
-C:\Users\Aaron\Documents\RealTimeControlAssignment\AVR Assignment\AVR Assignment\AVR Assignment.asm(14): Including file 'C:\Program Files (x86)\Atmel\Atmel Studio 6.0\extensions\Atmel\AVRAssembler\2.1.51.64\AvrAssembler/Include\m8def.inc'
-C:\Users\Aaron\Documents\RealTimeControlAssignment\AVR Assignment\AVR Assignment\AVR Assignment.asm(57): Including file 'C:\Users\Aaron\Documents\RealTimeControlAssignment\AVR Assignment\AVR Assignment\MECHENG313A.inc'
+[builtin](2): Including file 'C:\Program Files (x86)\Atmel\Atmel Toolchain\AVR Assembler\Native\2.1.1175\avrassembler\Include\m8def.inc'
+\\engad.foe.auckland.ac.nz\engdfs\Home\ayeo722\Documents\RealTimeControlAssignment\AVR Assignment\AVR Assignment\AVR Assignment.asm(14): Including file 'C:\Program Files (x86)\Atmel\Atmel Toolchain\AVR Assembler\Native\2.1.1175\avrassembler\Include\m8def.inc'
+\\engad.foe.auckland.ac.nz\engdfs\Home\ayeo722\Documents\RealTimeControlAssignment\AVR Assignment\AVR Assignment\AVR Assignment.asm(57): Including file '\\engad.foe.auckland.ac.nz\engdfs\Home\ayeo722\Documents\RealTimeControlAssignment\AVR Assignment\AVR Assignment\MECHENG313A.inc'
                  
                  /*
                  
@@ -780,8 +780,8 @@ C:\Users\Aaron\Documents\RealTimeControlAssignment\AVR Assignment\AVR Assignment
 000000 c2b0      		rjmp Main 			;Reset vector
                  .org INT0addr				;Setting Origin Address
 000001 c32a      		rjmp IntV0 			;INT vector - for toggling the door state
-                 .org ADCCaddr
-00000e c327      		rjmp ADCF0
+                 ;.org ADCCaddr
+                 ;		rjmp ADCF0
                  .org OVF0addr				;Setting Origin Address
 000009 c2c7      		rjmp ClockTick 		;ClockTick vector
                  
@@ -1164,6 +1164,7 @@ C:\Users\Aaron\Documents\RealTimeControlAssignment\AVR Assignment\AVR Assignment
 000297 f428      	brcc	d24u_3		;if result negative
 000298 0f03      	add	r16,r19	;    restore remainder
 000299 1f14      	adc r17,r20
+                 
 00029a 1f25      	adc	r18,r21
 00029b 9488      	clc			;    clear carry to be shifted into result
 00029c cfee      	rjmp	d24u_1		;else
@@ -1322,6 +1323,12 @@ C:\Users\Aaron\Documents\RealTimeControlAssignment\AVR Assignment\AVR Assignment
                  
                  
                  
+                 
+                 
+                 
+                 
+                 
+                 
                  ;***************** Clock Tick Interrupt Service Routine *****************
                  ClockTick:
 0002d1 9a8c
@@ -1341,6 +1348,19 @@ C:\Users\Aaron\Documents\RealTimeControlAssignment\AVR Assignment\AVR Assignment
                  		; Every tick, read ADCL and:
                  		; convert from fahrenheit to degrees C
                  		; convert from Fluid Ounces to Litres 
+                 
+                 
+                 
+                 
+                 
+                 
+                 
+                 
+                 
+                 
+                 
+                 
+                 
                  
 0002d6 9894      		End_Task	ClockTick_Task	;Turn output indicator pin Off
 0002d7 9518      		RETI						;Return from Interurpt
@@ -1535,75 +1555,75 @@ C:\Users\Aaron\Documents\RealTimeControlAssignment\AVR Assignment\AVR Assignment
                  ;***************** Start of External Interrupt *****************
                  ; Car door status switcher ISR - Soft Real Time   ;Done!
                  ; DOOR OPEN LIGHT LED PB4
+                 
                  IntV0:
 00032c 930f      		push r16
 00032d 9478      		sei ; Enable interrupts.
                  
                  		;Check the PB2 bit. If it is set, the door WAS shut (LED off) and it's now open. We want to turn ON the LED. 
 00032e 99c2      		sbic PORTB, PB2
-C:\Users\Aaron\Documents\RealTimeControlAssignment\AVR Assignment\AVR Assignment\AVR Assignment.asm(344): warning: jmp k: Unsupported instruction on ATmega8
-00032f 940c 0333 		jmp door_shut
+00032f c002      		rjmp door_shut
                  
                  		;if door was open (PB4 == 0), it is shut now
                  		
-000331 9ac2      		sbi PORTB, PB2  ;SET the door LED - LED is OFF
-000332 9518      		RETI			;Return from Interurpt
+000330 9ac2      		sbi PORTB, PB2  ;SET the door LED - LED is OFF
+000331 9518      		RETI			;Return from Interurpt
                  
                  		door_shut:
                  		;if door was shut, we set it as open
-000333 98c2      		cbi PORTB, PB2	;Clear the door LED - LED is ON 
+000332 98c2      		cbi PORTB, PB2	;Clear the door LED - LED is ON 
                  
-000334 910f      		pop r16
-000335 9518      		RETI			;Return from Interurpt
+000333 910f      		pop r16
+000334 9518      		RETI			;Return from Interurpt
                  ;***************** End External Interrupt **********************
                  
                  
                  
                  
                  ;***************** Collision Detection*****************
-000336 9a8e
-000337 9a96      ADCF0:	Start_Task 	2 	;Turn output indicator pin On
+000335 9a8e
+000336 9a96      ADCF0:	Start_Task 	2 	;Turn output indicator pin On
                  		
                  		;********* Write Task  here ********
-000338 b164      		in r22, ADCL
-000339 b175      		in r23, ADCH
-00033a 2744      		clr r20
+000337 b164      		in r22, ADCL
+000338 b175      		in r23, ADCH
+000339 2744      		clr r20
                  
                  		;obtain 2 LSB of ADCH, store in r20
-00033b fd71      		sbrc r23,  1; Skip if bit 1 in ADCH is clear
-00033c 6048      		sbr r20, $08;
+00033a fd71      		sbrc r23,  1; Skip if bit 1 in ADCH is clear
+00033b 6048      		sbr r20, $08;
                  
-00033d fd70      		sbrc r23, 0; Skip if bit 0 in ADCH is clear
-00033e 6044      		sbr r20, $04;
+00033c fd70      		sbrc r23, 0; Skip if bit 0 in ADCH is clear
+00033d 6044      		sbr r20, $04;
                  
                  
                  		;obtain 2 MSB of ADCL, store in r20
-00033f fd67      		sbrc r22,  7; Skip if bit 7 in ADCL is clear
-000340 6042      		sbr r20, $02;
+00033e fd67      		sbrc r22,  7; Skip if bit 7 in ADCL is clear
+00033f 6042      		sbr r20, $02;
                  
-000341 fd66      		sbrc r22, 6; Skip if bit 6 in ADCL is clear
-000342 6041      		sbr r20, $01;
+000340 fd66      		sbrc r22, 6; Skip if bit 6 in ADCL is clear
+000341 6041      		sbr r20, $01;
                  
                  		
-000343 3044      		cpi r20, 4
-000344 f410      		brsh collision
-000345 9ac4      		sbi PORTB, PB4 ;Collision has NOT occurred. Turn off LED at PB4
+000342 3044      		cpi r20, 4
+000343 f410      		brsh collision
+000344 9ac4      		sbi PORTB, PB4 ;Collision has NOT occurred. Turn off LED at PB4 by setting the bit
                  				
-000346 9518      		RETI
+000345 9518      		RETI
                  
                  
                  		collision:
-000347 98c4      		cbi PORTB, PB4 ;Collision has occurred. Turn on LED at PB4
+000346 98c4      		cbi PORTB, PB4 ;Collision has occurred. Turn on LED at PB4 by clearing the bit
                  				
-000348 9518      		RETI
+000347 9518      		RETI
                  		
                  		;end of collision
                  		
                  
                  		;************************************
                  		
-000349 9896      		End_Task	2	;Turn output indicator pin Off
-00034a 9518      		RETI
+000348 9896      		End_Task	2	;Turn output indicator pin Off
+000349 9518      		RETI
                  ;***************** End Task1 **********************
                  
                  
@@ -1612,36 +1632,45 @@ C:\Users\Aaron\Documents\RealTimeControlAssignment\AVR Assignment\AVR Assignment
                  
                  
                  ;***************** Start of Task1 *****************
-00034b 9a8d
-00034c 9a95      Task_1:	Start_Task 	1 	;Turn output indicator pin On
-00034d 930f      		push r16
+00034a 9a8d
+00034b 9a95      Task_1:	Start_Task 	1 	;Turn output indicator pin On
+00034c 930f      		push r16
                  		;********* Write Task 1 here ********
                  		;ldi r22, low(Mass); load low bit 
                  		;ldi r23, high(Mass); low high bit
                  		;ldi r21, Velocity; load velocity
-00034e 9f55      		mul r21, r21; mul has to
-00034f 2d51      		mov r21, r1
-000350 2d40      		mov r20, r0
-000351 deb5      		rcall mul16x16_32; r19:r18:r17:r16 = r23:r22 * r21:r20
-000352 2f82      		mov r24, r18
-000353 2f71      		mov r23, r17
-000354 2f60      		mov r22, r16
-000355 e032      		ldi r19, 2;
-000356 e050      		ldi r21, 0
-000357 e040      		ldi r20, 0
-000358 2722      		clr r18
-000359 2711      		clr r17
-00035a 2700      		clr r16
-00035b df2b      		rcall div24x24_24; r24:r23:r22 = r24:r23:r22 / r21:r20:r19
+00034d 9f55      		mul r21, r21; mul has to
+00034e 2d51      		mov r21, r1
+00034f 2d40      		mov r20, r0
+000350 deb6      		rcall mul16x16_32; r19:r18:r17:r16 = r23:r22 * r21:r20
+000351 2f82      		mov r24, r18
+000352 2f71      		mov r23, r17
+000353 2f60      		mov r22, r16
+000354 e032      		ldi r19, 2;
+000355 e050      		ldi r21, 0
+000356 e040      		ldi r20, 0
+000357 2722      		clr r18
+000358 2711      		clr r17
+000359 2700      		clr r16
+00035a df2c      		rcall div24x24_24; r24:r23:r22 = r24:r23:r22 / r21:r20:r19
                  		;ldi r19, Distance
                  		;rcall div24x24_24;
                  
                  
                  		;************************************
-00035c 910f      		pop r16
-00035d 9895      		End_Task	1	;Turn output indicator pin Off
-00035e 9518      		RETI
+00035b 910f      		pop r16
+00035c 9895      		End_Task	1	;Turn output indicator pin Off
+00035d 9518      		RETI
                  ;***************** End Task1 **********************
+                 
+                 
+                 ;Test ISR
+                 ;To use, connect P
+                 IntV1:
+                 		
+                 		
+00035e 9518      		reti
+                 
 
 
 RESOURCE USE INFORMATION
@@ -1676,23 +1705,23 @@ bset  :   0 bst   :   0 cbi   :   8 cbr   :   0 clc   :   2 clh   :   0
 cli   :   0 cln   :   0 clr   :  26 cls   :   0 clt   :   0 clv   :   0 
 clz   :   0 com   :   0 cp    :   0 cpc   :   0 cpi   :   1 cpse  :   0 
 dec   :   2 eor   :   0 fmul  :   3 fmuls :   3 fmulsu:   6 icall :   0 
-ijmp  :   0 in    :   6 inc   :   0 jmp   :   1 ld    :   0 ldd   :   0 
-ldi   :  31 lds   :   0 lpm   :   6 lsl   :   0 lsr   :   0 mov   :  14 
-movw  :   9 mul   :  15 muls  :   3 mulsu :   6 neg   :   0 nop   :   0 
-or    :   0 ori   :   0 out   :  10 pop   :   4 push  :   4 rcall :   9 
-ret   :  14 reti  :   7 rjmp  :   9 rol   :   8 ror   :   0 sbc   :  14 
-sbci  :   0 sbi   :  16 sbic  :   1 sbis  :   0 sbiw  :   0 sbr   :  12 
-sbrc  :  12 sbrs  :   0 sec   :   2 seh   :   0 sei   :   3 sen   :   0 
-ser   :   0 ses   :   0 set   :   0 sev   :   0 sez   :   0 sleep :   0 
-spm   :   0 st    :   0 std   :   0 sts   :   2 sub   :   5 subi  :   0 
-swap  :   0 tst   :   0 wdr   :   0 
-Instructions used: 39 out of 111 (35.1%)
+ijmp  :   0 in    :   6 inc   :   0 ld    :   0 ldd   :   0 ldi   :  31 
+lds   :   0 lpm   :   6 lsl   :   0 lsr   :   0 mov   :  14 movw  :   9 
+mul   :  15 muls  :   3 mulsu :   6 neg   :   0 nop   :   0 or    :   0 
+ori   :   0 out   :  10 pop   :   4 push  :   4 rcall :   9 ret   :  14 
+reti  :   8 rjmp  :   9 rol   :   8 ror   :   0 sbc   :  14 sbci  :   0 
+sbi   :  16 sbic  :   1 sbis  :   0 sbiw  :   0 sbr   :  12 sbrc  :  12 
+sbrs  :   0 sec   :   2 seh   :   0 sei   :   3 sen   :   0 ser   :   0 
+ses   :   0 set   :   0 sev   :   0 sez   :   0 sleep :   0 spm   :   0 
+st    :   0 std   :   0 sts   :   2 sub   :   5 subi  :   0 swap  :   0 
+tst   :   0 wdr   :   0 
+Instructions used: 38 out of 110 (34.5%)
 
 "ATmega8" memory use summary [bytes]:
 Segment   Begin    End      Code   Data   Used    Size   Use%
 ---------------------------------------------------------------
-[.cseg] 0x000000 0x0006be    710     24    734    8192   9.0%
+[.cseg] 0x000000 0x0006be    708     24    732    8192   8.9%
 [.dseg] 0x000060 0x000069      0      2      2    1024   0.2%
 [.eseg] 0x000000 0x000000      0      0      0     512   0.0%
 
-Assembly complete, 0 errors, 1 warnings
+Assembly complete, 0 errors, 0 warnings

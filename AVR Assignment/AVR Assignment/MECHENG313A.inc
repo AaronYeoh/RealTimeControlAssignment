@@ -354,6 +354,7 @@ d24u_2:	rol	r16	;shift dividend into remainder
 	brcc	d24u_3		;if result negative
 	add	r16,r19	;    restore remainder
 	adc r17,r20
+
 	adc	r18,r21
 	clc			;    clear carry to be shifted into result
 	rjmp	d24u_1		;else

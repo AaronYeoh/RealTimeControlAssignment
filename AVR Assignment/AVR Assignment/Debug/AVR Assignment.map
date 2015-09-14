@@ -1,5 +1,5 @@
 
-AVRASM ver. 2.1.52  C:\Users\Aaron\Documents\RealTimeControlAssignment\AVR Assignment\AVR Assignment\AVR Assignment.asm Sun Sep 13 22:25:26 2015
+AVRASM ver. 2.1.57  \\engad.foe.auckland.ac.nz\engdfs\Home\ayeo722\Documents\RealTimeControlAssignment\AVR Assignment\AVR Assignment\AVR Assignment.asm Mon Sep 14 14:22:15 2015
 
 
 EQU  SIGNATURE_000 0000001e
@@ -511,7 +511,6 @@ DSEG CounterSchedule 00000067
 DSEG PulseWidth   00000068
 CSEG Main         000002b1
 CSEG IntV0        0000032c
-CSEG ADCF0        00000336
 CSEG ClockTick    000002d1
 CSEG RPMLoad_Lookup 00000100
 CSEG FactorA_Lookup 00000108
@@ -538,6 +537,8 @@ CSEG System_Monitor 000002ae
 CSEG forever      000002cc
 CSEG MonitorTask  000002d8
 CSEG Task_3       000002f4
-CSEG door_shut    00000333
-CSEG collision    00000347
-CSEG Task_1       0000034b
+CSEG door_shut    00000332
+CSEG ADCF0        00000335
+CSEG collision    00000346
+CSEG Task_1       0000034a
+CSEG IntV1        0000035e
