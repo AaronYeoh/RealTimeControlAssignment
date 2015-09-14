@@ -1,9 +1,9 @@
 
-AVRASM ver. 2.1.57  \\engad.foe.auckland.ac.nz\engdfs\Home\ayeo722\Documents\RealTimeControlAssignment\AVR Assignment\AVR Assignment\AVR Assignment.asm Mon Sep 14 14:22:15 2015
+AVRASM ver. 2.1.57  \\engad.foe.auckland.ac.nz\engdfs\Home\ayeo722\Documents\RealTimeControlAssignment\AVR Assignment\AVR Assignment\AVR Assignment.asm Mon Sep 14 15:07:38 2015
 
 [builtin](2): Including file 'C:\Program Files (x86)\Atmel\Atmel Toolchain\AVR Assembler\Native\2.1.1175\avrassembler\Include\m8def.inc'
 \\engad.foe.auckland.ac.nz\engdfs\Home\ayeo722\Documents\RealTimeControlAssignment\AVR Assignment\AVR Assignment\AVR Assignment.asm(14): Including file 'C:\Program Files (x86)\Atmel\Atmel Toolchain\AVR Assembler\Native\2.1.1175\avrassembler\Include\m8def.inc'
-\\engad.foe.auckland.ac.nz\engdfs\Home\ayeo722\Documents\RealTimeControlAssignment\AVR Assignment\AVR Assignment\AVR Assignment.asm(57): Including file '\\engad.foe.auckland.ac.nz\engdfs\Home\ayeo722\Documents\RealTimeControlAssignment\AVR Assignment\AVR Assignment\MECHENG313A.inc'
+\\engad.foe.auckland.ac.nz\engdfs\Home\ayeo722\Documents\RealTimeControlAssignment\AVR Assignment\AVR Assignment\AVR Assignment.asm(62): Including file '\\engad.foe.auckland.ac.nz\engdfs\Home\ayeo722\Documents\RealTimeControlAssignment\AVR Assignment\AVR Assignment\MECHENG313A.inc'
                  
                  /*
                  
@@ -762,6 +762,9 @@ AVRASM ver. 2.1.57  \\engad.foe.auckland.ac.nz\engdfs\Home\ayeo722\Documents\Rea
                  .org 0x67 					; Set SRAM address to hex 67
 000067           CounterSchedule: .byte 1 ; Reserve a byte at SRAM for CounterSchedule
 000068           PulseWidth: .byte 1
+                 
+000069           LeftBroken: .byte 1
+00006a           RightBroken: .byte 1
                  /*  ************ Instructions on using variables in program memory
                  .DSEG 
                  var1:  .BYTE 1 ; reserve 1 byte to var1 
@@ -780,6 +783,8 @@ AVRASM ver. 2.1.57  \\engad.foe.auckland.ac.nz\engdfs\Home\ayeo722\Documents\Rea
 000000 c2b0      		rjmp Main 			;Reset vector
                  .org INT0addr				;Setting Origin Address
 000001 c32a      		rjmp IntV0 			;INT vector - for toggling the door state
+                 .org INT1addr				;Setting Origin Address
+000002 c35b      		rjmp IntV1			;INT vector - for toggling the light state
                  ;.org ADCCaddr
                  ;		rjmp ADCF0
                  .org OVF0addr				;Setting Origin Address
@@ -1276,9 +1281,9 @@ AVRASM ver. 2.1.57  \\engad.foe.auckland.ac.nz\engdfs\Home\ayeo722\Documents\Rea
 0002b7 9ac2      		sbi PORTB, PB2 ; Turns off Pin2 of PortB. Note the negative logic. For the collision detection
 0002b8 9ac4      		sbi PORTB, PB4	; Turns off Pin4 of PortB. For the door indicator. Door initialised as shut.
                  		
-0002b9 e400      		ldi r16,(1<<INT0); int mask 0 set +  (1<<INT1) 
+0002b9 ec00      		ldi r16,(1<<INT0) | (1<<INT1); int mask 0 set +  (1<<INT1) 
 0002ba bf0b      		out GICR,r16
-0002bb e002      		ldi r16,(1<<ISC01)		; interrupt t0 on rising edge
+0002bb e00a      		ldi r16,(1<<ISC01) | (1<<ISC11)		; interrupt t0 on falling edge
 0002bc bf05      		out MCUCR,r16		;Interrupt Setup
                  		
                  
@@ -1312,10 +1317,10 @@ AVRASM ver. 2.1.57  \\engad.foe.auckland.ac.nz\engdfs\Home\ayeo722\Documents\Rea
                  
                  		;********* Main infinite loop ********
                  forever:
-0002cc 9a8b
-0002cd 9a93      		Start_Task UpTime
+0002cc 9a8d
+0002cd 9a95      		Start_Task 1
 0002ce d009      		rcall MonitorTask
-0002cf 9893      		End_Task UpTime
+0002cf 9895      		End_Task 1
 0002d0 cffb      		rjmp forever 
                  ;*****************End of program *****************
                  
@@ -1667,10 +1672,53 @@ AVRASM ver. 2.1.57  \\engad.foe.auckland.ac.nz\engdfs\Home\ayeo722\Documents\Rea
                  ;Test ISR
                  ;To use, connect P
                  IntV1:
-                 		
-                 		
-00035e 9518      		reti
+00035e 930f      		push r16
                  
+00035f e001      		ldi r16, 1
+                 		
+000360 9995      		sbic PORTD, PD5 ; Left Broken toggle
+000361 d004      		rcall LeftStatusToggle	;change the state of the left switch
+                 
+000362 9994      		sbic PORTD, PD4; Right Broken toggle
+000363 d00e      		rcall RightStatusToggle ;change the state of the right switch
+                 
+000364 910f      		pop r16
+000365 9518      		reti
+                 
+                 LeftStatusToggle:
+                 		
+000366 9100 0069 		lds r16, LeftBroken
+                 
+000368 3001      		cpi r16, 1
+000369 f021      		breq SetLeftTo0
+                 		
+00036a e001      		ldi r16, 1
+00036b 9300 0069 		sts LeftBroken, r16
+00036d 9508      		ret
+                 		
+                 		SetLeftTo0:
+                 
+00036e e000      		ldi r16, 0
+00036f 9300 0069 		sts LeftBroken, r16
+000371 9508      		ret
+                 
+                 
+                 RightStatusToggle:
+                 
+000372 9100 006a 		lds r16, RightBroken
+                 
+000374 3001      		cpi r16, 1
+000375 f021      		breq SetRightTo0
+                 		
+000376 e001      		ldi r16, 1
+000377 9300 006a 		sts RightBroken, r16
+000379 9508      		ret
+                 		
+                 		SetRightTo0:
+                 
+00037a e000      		ldi r16, 0
+00037b 9300 006a 		sts RightBroken, r16
+00037d 9508      		ret
 
 
 RESOURCE USE INFORMATION
@@ -1690,7 +1738,7 @@ counted separately from r26..r31 here.
 "ATmega8" register use summary:
 r0 :  36 r1 :  31 r2 :  41 r3 :   0 r4 :   5 r5 :   4 r6 :   0 r7 :   0 
 r8 :   0 r9 :   0 r10:   0 r11:   0 r12:   0 r13:   0 r14:   0 r15:   0 
-r16:  43 r17:  33 r18:  42 r19:  45 r20:  51 r21:  31 r22:  36 r23:  31 
+r16:  58 r17:  33 r18:  42 r19:  45 r20:  51 r21:  31 r22:  36 r23:  31 
 r24:   7 r25:   2 r26:   0 r27:   0 r28:   0 r29:   0 r30:   6 r31:   3 
 x  :   0 y  :   0 z  :   3 
 Registers used: 18 out of 35 (51.4%)
@@ -1698,30 +1746,30 @@ Registers used: 18 out of 35 (51.4%)
 "ATmega8" instruction use summary:
 .lds  :   0 .sts  :   0 adc   :  48 add   :  28 adiw  :   0 and   :   0 
 andi  :   0 asr   :   0 bclr  :   0 bld   :   0 brbc  :   0 brbs  :   0 
-brcc  :   2 brcs  :   0 breq  :   0 brge  :   0 brhc  :   0 brhs  :   0 
+brcc  :   2 brcs  :   0 breq  :   2 brge  :   0 brhc  :   0 brhs  :   0 
 brid  :   0 brie  :   0 brlo  :   0 brlt  :   0 brmi  :   0 brne  :   2 
 brpl  :   0 brsh  :   1 brtc  :   0 brts  :   0 brvc  :   0 brvs  :   0 
 bset  :   0 bst   :   0 cbi   :   8 cbr   :   0 clc   :   2 clh   :   0 
 cli   :   0 cln   :   0 clr   :  26 cls   :   0 clt   :   0 clv   :   0 
-clz   :   0 com   :   0 cp    :   0 cpc   :   0 cpi   :   1 cpse  :   0 
+clz   :   0 com   :   0 cp    :   0 cpc   :   0 cpi   :   3 cpse  :   0 
 dec   :   2 eor   :   0 fmul  :   3 fmuls :   3 fmulsu:   6 icall :   0 
-ijmp  :   0 in    :   6 inc   :   0 ld    :   0 ldd   :   0 ldi   :  31 
-lds   :   0 lpm   :   6 lsl   :   0 lsr   :   0 mov   :  14 movw  :   9 
+ijmp  :   0 in    :   6 inc   :   0 ld    :   0 ldd   :   0 ldi   :  36 
+lds   :   2 lpm   :   6 lsl   :   0 lsr   :   0 mov   :  14 movw  :   9 
 mul   :  15 muls  :   3 mulsu :   6 neg   :   0 nop   :   0 or    :   0 
-ori   :   0 out   :  10 pop   :   4 push  :   4 rcall :   9 ret   :  14 
-reti  :   8 rjmp  :   9 rol   :   8 ror   :   0 sbc   :  14 sbci  :   0 
-sbi   :  16 sbic  :   1 sbis  :   0 sbiw  :   0 sbr   :  12 sbrc  :  12 
+ori   :   0 out   :  10 pop   :   5 push  :   5 rcall :  11 ret   :  18 
+reti  :   8 rjmp  :  10 rol   :   8 ror   :   0 sbc   :  14 sbci  :   0 
+sbi   :  16 sbic  :   3 sbis  :   0 sbiw  :   0 sbr   :  12 sbrc  :  12 
 sbrs  :   0 sec   :   2 seh   :   0 sei   :   3 sen   :   0 ser   :   0 
 ses   :   0 set   :   0 sev   :   0 sez   :   0 sleep :   0 spm   :   0 
-st    :   0 std   :   0 sts   :   2 sub   :   5 subi  :   0 swap  :   0 
+st    :   0 std   :   0 sts   :   6 sub   :   5 subi  :   0 swap  :   0 
 tst   :   0 wdr   :   0 
-Instructions used: 38 out of 110 (34.5%)
+Instructions used: 40 out of 110 (36.4%)
 
 "ATmega8" memory use summary [bytes]:
 Segment   Begin    End      Code   Data   Used    Size   Use%
 ---------------------------------------------------------------
-[.cseg] 0x000000 0x0006be    708     24    732    8192   8.9%
-[.dseg] 0x000060 0x000069      0      2      2    1024   0.2%
+[.cseg] 0x000000 0x0006fc    772     24    796    8192   9.7%
+[.dseg] 0x000060 0x00006b      0      4      4    1024   0.4%
 [.eseg] 0x000000 0x000000      0      0      0     512   0.0%
 
 Assembly complete, 0 errors, 0 warnings

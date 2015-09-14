@@ -18,6 +18,9 @@
 .org 0x67 					; Set SRAM address to hex 67
 CounterSchedule: .byte 1 ; Reserve a byte at SRAM for CounterSchedule
 PulseWidth: .byte 1
+
+LeftBroken: .byte 1
+RightBroken: .byte 1
 /*  ************ Instructions on using variables in program memory
 .DSEG 
 var1:  .BYTE 1 ; reserve 1 byte to var1 
@@ -36,6 +39,8 @@ ld r1,Z ; Load VAR1 into register 1
 		rjmp Main 			;Reset vector
 .org INT0addr				;Setting Origin Address
 		rjmp IntV0 			;INT vector - for toggling the door state
+.org INT1addr				;Setting Origin Address
+		rjmp IntV1			;INT vector - for toggling the light state
 ;.org ADCCaddr
 ;		rjmp ADCF0
 .org OVF0addr				;Setting Origin Address
@@ -78,9 +83,9 @@ Main:
 		sbi PORTB, PB2 ; Turns off Pin2 of PortB. Note the negative logic. For the collision detection
 		sbi PORTB, PB4	; Turns off Pin4 of PortB. For the door indicator. Door initialised as shut.
 		
-		ldi r16,(1<<INT0); int mask 0 set +  (1<<INT1) 
+		ldi r16,(1<<INT0) | (1<<INT1); int mask 0 set +  (1<<INT1) 
 		out GICR,r16
-		ldi r16,(1<<ISC01)		; interrupt t0 on rising edge
+		ldi r16,(1<<ISC01) | (1<<ISC11)		; interrupt t0 on falling edge
 		out MCUCR,r16		;Interrupt Setup
 		
 
@@ -114,9 +119,9 @@ Main:
 
 		;********* Main infinite loop ********
 forever:
-		Start_Task UpTime
+		Start_Task 1
 		rcall MonitorTask
-		End_Task UpTime
+		End_Task 1
 		rjmp forever 
 ;*****************End of program *****************
 
@@ -464,7 +469,50 @@ Task_1:	Start_Task 	1 	;Turn output indicator pin On
 ;Test ISR
 ;To use, connect P
 IntV1:
+		push r16
+
+		ldi r16, 1
 		
-		
+		sbic PORTD, PD5 ; Left Broken toggle
+		rcall LeftStatusToggle	;change the state of the left switch
+
+		sbic PORTD, PD4; Right Broken toggle
+		rcall RightStatusToggle ;change the state of the right switch
+
+		pop r16
 		reti
 
+LeftStatusToggle:
+		
+		lds r16, LeftBroken
+
+		cpi r16, 1
+		breq SetLeftTo0
+		
+		ldi r16, 1
+		sts LeftBroken, r16
+		ret
+		
+		SetLeftTo0:
+
+		ldi r16, 0
+		sts LeftBroken, r16
+		ret
+
+
+RightStatusToggle:
+
+		lds r16, RightBroken
+
+		cpi r16, 1
+		breq SetRightTo0
+		
+		ldi r16, 1
+		sts RightBroken, r16
+		ret
+		
+		SetRightTo0:
+
+		ldi r16, 0
+		sts RightBroken, r16
+		ret
