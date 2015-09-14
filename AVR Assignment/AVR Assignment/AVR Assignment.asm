@@ -20,6 +20,8 @@ CounterSchedule: .byte 1 ; Reserve a byte at SRAM for CounterSchedule
 PulseWidth: .byte 1
 
 LeftBroken: .byte 1
+TurnOnLeftNext: .byte 1
+TurnOffLeftNext: .byte 1
 RightBroken: .byte 1
 /*  ************ Instructions on using variables in program memory
 .DSEG 
@@ -41,10 +43,12 @@ ld r1,Z ; Load VAR1 into register 1
 		rjmp IntV0 			;INT vector - for toggling the door state
 .org INT1addr				;Setting Origin Address
 		rjmp IntV1			;INT vector - for toggling the light state
-;.org ADCCaddr
-;		rjmp ADCF0
+.org ADCCaddr
+		rjmp ADCF0
 .org OVF0addr				;Setting Origin Address
 		rjmp ClockTick 		;ClockTick vector
+.org OVF1addr				;Setting Origin Address
+		rjmp ClockTickLeftRight 		;ClockTick vector
 
 ;.cseg
 .org   0x0100               ;table address engine speed (RPM) and load
@@ -73,15 +77,20 @@ Main:
 		out SPH,r16		
 			
 
-		;CBI DDRD, PD2		;I/O Setup
+		;SBI DDRD, PD4		;I/O Setup Left broken toggle
+		;SBI DDRD, PD5		;I/O Setup Right Broken toggle
 		;sbi PORTD,PD2		; Test code. Turns on an LED
 
 		;Set the DDR for PORTB, allowing for us to write out
+		sbi DDRB, PB0
 		sbi DDRB, PB2  ;
 		sbi DDRB, PB4
+		sbi DDRB, PB7
 
 		sbi PORTB, PB2 ; Turns off Pin2 of PortB. Note the negative logic. For the collision detection
 		sbi PORTB, PB4	; Turns off Pin4 of PortB. For the door indicator. Door initialised as shut.
+		sbi PORTB, PB7	; Turns off Pin7 of PortB. LeftLED init as off
+		sbi PORTB, PB0	; Turns off Pin0 of PortB. RightLED init as off
 		
 		ldi r16,(1<<INT0) | (1<<INT1); int mask 0 set +  (1<<INT1) 
 		out GICR,r16
@@ -98,17 +107,34 @@ Main:
 		out ADCSRA, r16
 
 
-		cbi DDRC,PC1		
+		;cbi DDRC,PC1		; DELETE ?
 
 		;********* ClockTick 8-bit Timer/Counter 0 *******      
 		ldi r16, (1<<CS01)      ; Start Counter 0      
       	out TCCR0, r16			; Timer Clock = Sys Clock (1MHz) / 8 (prescaler)
-		ldi r16, (1<<TOIE0)     ; Enable interru       
-		out TIMSK, r16			; Enable Timer Overflow interrupt
-
+		
 		ldi	r16, 68				; MaxValue = TOVck (1.5ms or your Cal time) * Pck (1MHz) / 8 (prescaler)
 		out TCNT0, r16			; TCNT0Value = 255 - MaxValue	
 		
+
+		;********* ClockTick 16-bit Timer/Counter 1 *******      
+		ldi r16, (1<<CS11)      ; Start Counter 0      
+      	out TCCR1B, r16			; Timer Clock = Sys Clock (1MHz) / 8 (prescaler)
+		
+		;to get 0.25ms per interrupt, TCNT1 = 34286 = $85EE
+		ldi	r16, $EE			; MaxValue = TOVck (1.5ms or your Cal time) * Pck (1MHz) / 8 (prescaler)
+		out TCNT1L, r16			; TCNT0Value = 2^16 - MaxValue	
+
+		ldi	r16, $85			; MaxValue = TOVck (1.5ms or your Cal time) * Pck (1MHz) / 8 (prescaler)
+		out TCNT1H, r16			; TCNT0Value = 255 - MaxValue	
+
+
+
+
+		;********* Clock Interrupts
+		ldi r16, (1<<TOIE0) | (1<<TOIE1)     ; Enable interrupts for Counter 0 and 1       
+		out TIMSK, r16			; Enable Timer Overflow interrupt
+
 
 
 
@@ -119,9 +145,9 @@ Main:
 
 		;********* Main infinite loop ********
 forever:
-		Start_Task 1
+		;Start_Task 1
 		rcall MonitorTask
-		End_Task 1
+		;End_Task 1
 		rjmp forever 
 ;*****************End of program *****************
 
@@ -137,7 +163,7 @@ forever:
 
 ;***************** Clock Tick Interrupt Service Routine *****************
 ClockTick:
-		Start_Task 	ClockTick_Task	;Turn output indicator pin On
+		;Start_Task 	ClockTick_Task	;Turn output indicator pin On
 		sei		;Enable interrupts!!!
 
 		;********* Write ClockTick Code here ********
@@ -155,21 +181,145 @@ ClockTick:
 		; convert from Fluid Ounces to Litres 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-		End_Task	ClockTick_Task	;Turn output indicator pin Off
+		;End_Task	ClockTick_Task	;Turn output indicator pin Off
 		RETI						;Return from Interurpt
+
+
 ;***************** End External Interrupt **********************
+
+;***************** Clock Tick Interrupt Service Routine *****************
+ClockTickLeftRight:
+		
+		sei		;Enable interrupts!!!
+		
+				;to get 0.25ms per interrupt, TCNT1 = 34286 = $85EE
+		ldi	r16, $EE			; MaxValue = TOVck (1.5ms or your Cal time) * Pck (1MHz) / 8 (prescaler)
+		out TCNT1L, r16			; TCNT0Value = 2^16 - MaxValue	
+
+		ldi	r16, $85			; MaxValue = TOVck (1.5ms or your Cal time) * Pck (1MHz) / 8 (prescaler)
+		out TCNT1H, r16			; TCNT0Value = 255 - MaxValue	
+
+
+		;********* Write ClockTick Code here ********
+		;LEFT
+
+		
+		;When LeftLED is OFF 
+		sbis PORTB, PB7 ;Skip if Left is off (PB0 == 1)
+		rjmp LeftLEDON ; Left is actually ON
+
+			;If Left is pressed
+			sbic PORTD, PD7 ;Check if LEFT button pressed (PD7 = 0), otherwise we RJMP to the right LED code
+			rjmp RightLED ; Skipped if PD7 = 0
+
+				;If either Broken or TurnOnLeftNext
+				lds r16, LeftBroken
+				lds r17, TurnOnLeftNext
+				or r16, r17 ; if LeftBroken OR TurnOnLeftNext, turn on LEFT. R16 = 1
+				sbrs r16, 0  ;If we want to turn on the 
+				rjmp TurnOnLater 
+					;Turn Left ON
+					cbi PORTB, PB7 ; Turn the LED ON by setting PB7 = 0
+					ldi r16, 0
+					sts TurnOnLeftNext, r16
+
+					rjmp RightLED
+
+				;Not Broken or TOLN
+				TurnOnLater:
+					;TurnOnLeftNext = true
+					ldi r16, 1
+					sts TurnOnLeftNext, r16
+					;Do nothing
+				
+			rjmp RightLED
+
+		LeftLEDON:
+		;If LeftLED is ON
+
+			;If either Broken or TurnOffLeftNext
+			lds r16, LeftBroken
+			lds r17, TurnOffLeftNext
+			or r16, r17 ; if LeftBroken OR TurnOnLeftNext, turn on LEFT. R16 = 1
+			sbrs r16, 0  ;If we want to turn on the 
+			rjmp TurnOffLater 
+				;Turn Left OFF
+				sbi PORTB, PB7 ; Turn the LED OFF by setting PB7 = 1
+				ldi r16, 0
+				sts TurnOffLeftNext, r16	;TurnOffLeftNext = false
+
+				rjmp RightLED
+			
+			;Not Broken or TOLN
+			TurnOffLater:
+				;TurnOffLeftNext = true
+				ldi r16, 1
+				sts TurnOffLeftNext, r16
+				;Do nothing
+				
+			reti ; WARN: BOTTOM WILL NOT RUN
+		RightLED:	
+
+		
+		;When LeftLED is OFF 
+		sbis PORTB, PB7 ;Skip if Left is off (PB0 == 1)
+		rjmp LeftLEDON ; Left is actually ON
+
+			;If Left is pressed
+			sbic PORTD, PD7 ;Check if LEFT button pressed (PD7 = 0), otherwise we RJMP to the right LED code
+			rjmp RightLED ; Skipped if PD7 = 0
+
+				;If either Broken or TurnOnLeftNext
+				lds r16, LeftBroken
+				lds r17, TurnOnLeftNext
+				or r16, r17 ; if LeftBroken OR TurnOnLeftNext, turn on LEFT. R16 = 1
+				sbrs r16, 0  ;If we want to turn on the 
+				rjmp TurnOnLater 
+					;Turn Left ON
+					cbi PORTB, PB7 ; Turn the LED ON by setting PB7 = 0
+					ldi r16, 0
+					sts TurnOnLeftNext, r16
+
+					rjmp RightLED
+
+				;Not Broken or TOLN
+				TurnOnLater:
+					;TurnOnLeftNext = true
+					ldi r16, 1
+					sts TurnOnLeftNext, r16
+					;Do nothing
+				
+			rjmp RightLED
+
+		LeftLEDON:
+		;If LeftLED is ON
+
+			;If either Broken or TurnOffLeftNext
+			lds r16, LeftBroken
+			lds r17, TurnOffLeftNext
+			or r16, r17 ; if LeftBroken OR TurnOnLeftNext, turn on LEFT. R16 = 1
+			sbrs r16, 0  ;If we want to turn on the 
+			rjmp TurnOffLater 
+				;Turn Left OFF
+				sbi PORTB, PB7 ; Turn the LED OFF by setting PB7 = 1
+				ldi r16, 0
+				sts TurnOffLeftNext, r16	;TurnOffLeftNext = false
+
+				rjmp RightLED
+			
+			;Not Broken or TOLN
+			TurnOffLater:
+				;TurnOffLeftNext = true
+				ldi r16, 1
+				sts TurnOffLeftNext, r16
+				;Do nothing
+
+
+
+				
+		
+		RETI						;Return from Interurpt
+
 
 ; ASYNC CODE
 		; Collision DetectionTask HARD - DO NOT SEI 
@@ -249,7 +399,7 @@ MonitorTask:
 
 
 ;***************** Start of Task3 *****************
-Task_3:	Start_Task 	3	;Turn output indicator pin On
+Task_3:	;Start_Task 	3	;Turn output indicator pin On
 		
 		 push r16
 
@@ -350,7 +500,7 @@ Task_3:	Start_Task 	3	;Turn output indicator pin On
 
 
 		 pop r16
-		 End_Task	3	;Turn output indicator pin Off
+		; End_Task	3	;Turn output indicator pin Off
 		RET
 ;***************** End Task3 **********************
 
@@ -385,7 +535,7 @@ IntV0:
 
 
 ;***************** Collision Detection*****************
-ADCF0:	Start_Task 	2 	;Turn output indicator pin On
+ADCF0:	;Start_Task 	2 	;Turn output indicator pin On
 		
 		;********* Write Task  here ********
 		in r22, ADCL
@@ -425,7 +575,7 @@ ADCF0:	Start_Task 	2 	;Turn output indicator pin On
 
 		;************************************
 		
-		End_Task	2	;Turn output indicator pin Off
+		;End_Task	2	;Turn output indicator pin Off
 		RETI
 ;***************** End Task1 **********************
 
@@ -435,7 +585,7 @@ ADCF0:	Start_Task 	2 	;Turn output indicator pin On
 
 
 ;***************** Start of Task1 *****************
-Task_1:	Start_Task 	1 	;Turn output indicator pin On
+Task_1:	;Start_Task 	1 	;Turn output indicator pin On
 		push r16
 		;********* Write Task 1 here ********
 		;ldi r22, low(Mass); load low bit 
@@ -461,7 +611,7 @@ Task_1:	Start_Task 	1 	;Turn output indicator pin On
 
 		;************************************
 		pop r16
-		End_Task	1	;Turn output indicator pin Off
+		;End_Task	1	;Turn output indicator pin Off
 		RETI
 ;***************** End Task1 **********************
 
@@ -473,15 +623,20 @@ IntV1:
 
 		ldi r16, 1
 		
-		sbic PORTD, PD5 ; Left Broken toggle
+		sbis PIND, PD5 ; Left Broken toggle
 		rcall LeftStatusToggle	;change the state of the left switch
 
-		sbic PORTD, PD4; Right Broken toggle
+		sbis PIND, PD4; Right Broken toggle
 		rcall RightStatusToggle ;change the state of the right switch
 
 		pop r16
 		reti
 
+
+
+;************ Toggle Normal / Broken state ************* 
+
+;Left toggle
 LeftStatusToggle:
 		
 		lds r16, LeftBroken
@@ -499,7 +654,7 @@ LeftStatusToggle:
 		sts LeftBroken, r16
 		ret
 
-
+;Right toggle
 RightStatusToggle:
 
 		lds r16, RightBroken
@@ -516,3 +671,4 @@ RightStatusToggle:
 		ldi r16, 0
 		sts RightBroken, r16
 		ret
+;**************** end ******************

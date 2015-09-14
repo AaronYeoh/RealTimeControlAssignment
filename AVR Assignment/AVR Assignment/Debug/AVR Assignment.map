@@ -1,5 +1,5 @@
 
-AVRASM ver. 2.1.57  \\engad.foe.auckland.ac.nz\engdfs\Home\ayeo722\Documents\RealTimeControlAssignment\AVR Assignment\AVR Assignment\AVR Assignment.asm Mon Sep 14 15:07:38 2015
+AVRASM ver. 2.1.57  \\engad.foe.auckland.ac.nz\engdfs\Home\ayeo722\Documents\RealTimeControlAssignment\AVR Assignment\AVR Assignment\AVR Assignment.asm Mon Sep 14 17:42:43 2015
 
 
 EQU  SIGNATURE_000 0000001e
@@ -510,11 +510,15 @@ EQU  INT_VECTORS_SIZE 00000013
 DSEG CounterSchedule 00000067
 DSEG PulseWidth   00000068
 DSEG LeftBroken   00000069
-DSEG RightBroken  0000006a
+DSEG TurnOnLeftNext 0000006a
+DSEG TurnOffLeftNext 0000006b
+DSEG RightBroken  0000006c
 CSEG Main         000002b1
-CSEG IntV0        0000032c
-CSEG IntV1        0000035e
-CSEG ClockTick    000002d1
+CSEG IntV0        00000353
+CSEG IntV1        0000037f
+CSEG ADCF0        0000035c
+CSEG ClockTick    000002d5
+CSEG ClockTickLeftRight 000002d9
 CSEG RPMLoad_Lookup 00000100
 CSEG FactorA_Lookup 00000108
 CSEG FactorB_Lookup 0000010a
@@ -537,14 +541,17 @@ CSEG d8u_3        000002ac
 EQU  ClockTick_Task 00000000
 EQU  UpTime       ffffffff
 CSEG System_Monitor 000002ae
-CSEG forever      000002cc
-CSEG MonitorTask  000002d8
-CSEG Task_3       000002f4
-CSEG door_shut    00000332
-CSEG ADCF0        00000335
-CSEG collision    00000346
-CSEG Task_1       0000034a
-CSEG LeftStatusToggle 00000366
-CSEG RightStatusToggle 00000372
-CSEG SetLeftTo0   0000036e
-CSEG SetRightTo0  0000037a
+CSEG forever      000002d3
+CSEG MonitorTask  00000302
+CSEG LeftLEDON    000002f2
+CSEG RightLED     00000301
+CSEG TurnOnLater  000002ee
+CSEG TurnOffLater 000002fe
+CSEG Task_3       0000031e
+CSEG door_shut    00000359
+CSEG collision    0000036b
+CSEG Task_1       0000036e
+CSEG LeftStatusToggle 00000387
+CSEG RightStatusToggle 00000393
+CSEG SetLeftTo0   0000038f
+CSEG SetRightTo0  0000039b
