@@ -124,6 +124,25 @@ forever:
 
 
 
+
+
+;***************** Start of External Interrupt *****************
+IntV0:
+		push r16
+		;Done
+		ldi r16 , 1
+		sts FlagPD2, r16 ;Set the flag to 1. This is read in the ClockTick ISR
+		pop r16
+		reti			;Return from Interurpt
+;***************** End External Interrupt **********************
+
+
+
+
+
+
+
+
 ;***************** Clock Tick Interrupt Service Routine *****************
 ClockTick:
 		Start_Task 	ClockTick_Task	;Turn output indicator pin On
@@ -142,6 +161,19 @@ ClockTick:
 		; Every tick, read ADCL and:
 		; convert from fahrenheit to degrees C
 		; convert from Fluid Ounces to Litres 
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 		End_Task	ClockTick_Task	;Turn output indicator pin Off
 		RETI						;Return from Interurpt
@@ -439,3 +471,12 @@ Task_1:	Start_Task 	1 	;Turn output indicator pin On
 		End_Task	1	;Turn output indicator pin Off
 		RETI
 ;***************** End Task1 **********************
+
+
+;Test ISR
+;To use, connect P
+IntV1:
+		
+		
+		reti
+
