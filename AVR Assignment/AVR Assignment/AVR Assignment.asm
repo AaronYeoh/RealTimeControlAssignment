@@ -23,6 +23,9 @@ LeftBroken: .byte 1
 TurnOnLeftNext: .byte 1
 TurnOffLeftNext: .byte 1
 RightBroken: .byte 1
+
+TurnOnRightNext: .byte 1
+TurnOffRightNext: .byte 1
 /*  ************ Instructions on using variables in program memory
 .DSEG 
 var1:  .BYTE 1 ; reserve 1 byte to var1 
@@ -217,7 +220,7 @@ ClockTickLeftRight:
 				lds r17, TurnOnLeftNext
 				or r16, r17 ; if LeftBroken OR TurnOnLeftNext, turn on LEFT. R16 = 1
 				sbrs r16, 0  ;If we want to turn on the 
-				rjmp TurnOnLater 
+				rjmp TurnOnLeftLater 
 					;Turn Left ON
 					cbi PORTB, PB7 ; Turn the LED ON by setting PB7 = 0
 					ldi r16, 0
@@ -226,7 +229,7 @@ ClockTickLeftRight:
 					rjmp RightLED
 
 				;Not Broken or TOLN
-				TurnOnLater:
+				TurnOnLeftLater:
 					;TurnOnLeftNext = true
 					ldi r16, 1
 					sts TurnOnLeftNext, r16
@@ -242,7 +245,7 @@ ClockTickLeftRight:
 			lds r17, TurnOffLeftNext
 			or r16, r17 ; if LeftBroken OR TurnOnLeftNext, turn on LEFT. R16 = 1
 			sbrs r16, 0  ;If we want to turn on the 
-			rjmp TurnOffLater 
+			rjmp TurnOffLeftLater 
 				;Turn Left OFF
 				sbi PORTB, PB7 ; Turn the LED OFF by setting PB7 = 1
 				ldi r16, 0
@@ -251,67 +254,70 @@ ClockTickLeftRight:
 				rjmp RightLED
 			
 			;Not Broken or TOLN
-			TurnOffLater:
+			TurnOffLeftLater:
 				;TurnOffLeftNext = true
 				ldi r16, 1
 				sts TurnOffLeftNext, r16
 				;Do nothing
 				
 			reti ; WARN: BOTTOM WILL NOT RUN
+		
+		
+		
 		RightLED:	
 
 		
-		;When LeftLED is OFF 
-		sbis PORTB, PB7 ;Skip if Left is off (PB0 == 1)
-		rjmp LeftLEDON ; Left is actually ON
+		;When RightLED is OFF 
+		sbis PORTB, PB0 ;Skip if Right is off (PB0 == 1)
+		rjmp RightLEDON ; Left is actually ON
 
-			;If Left is pressed
-			sbic PORTD, PD7 ;Check if LEFT button pressed (PD7 = 0), otherwise we RJMP to the right LED code
-			rjmp RightLED ; Skipped if PD7 = 0
+			;If Right is pressed
+			sbic PORTD, PD0 ;Check if Right button pressed (PD0 = 0), otherwise return
+			reti ; Skipped if PD0 = 0
 
-				;If either Broken or TurnOnLeftNext
-				lds r16, LeftBroken
-				lds r17, TurnOnLeftNext
-				or r16, r17 ; if LeftBroken OR TurnOnLeftNext, turn on LEFT. R16 = 1
+				;If either Broken or TurnOnRightNext
+				lds r16, RightBroken
+				lds r17, TurnOnRightNext
+				or r16, r17 ; if RightBroken OR TurnOnRightNext, turn on RIGHT. R16 = 1
 				sbrs r16, 0  ;If we want to turn on the 
-				rjmp TurnOnLater 
-					;Turn Left ON
-					cbi PORTB, PB7 ; Turn the LED ON by setting PB7 = 0
+				rjmp TurnOnRightLater 
+					;Turn RIGHT ON
+					cbi PORTB, PB0 ; Turn the LED ON by setting PB7 = 0
 					ldi r16, 0
-					sts TurnOnLeftNext, r16
+					sts TurnOnRightNext, r16
 
 					rjmp RightLED
 
 				;Not Broken or TOLN
-				TurnOnLater:
-					;TurnOnLeftNext = true
+				TurnOnRightLater:
+					;TurnOnRightNext = true
 					ldi r16, 1
-					sts TurnOnLeftNext, r16
+					sts TurnOnRightNext, r16
 					;Do nothing
 				
 			rjmp RightLED
 
-		LeftLEDON:
-		;If LeftLED is ON
+		RightLEDON:
+		;If RightLED is ON
 
-			;If either Broken or TurnOffLeftNext
-			lds r16, LeftBroken
-			lds r17, TurnOffLeftNext
-			or r16, r17 ; if LeftBroken OR TurnOnLeftNext, turn on LEFT. R16 = 1
+			;If either Broken or TurnOffRightNext
+			lds r16, RightBroken
+			lds r17, TurnOffRightNext
+			or r16, r17 ; if RightBroken OR TurnOnRightNext, turn on Right. R16 = 1
 			sbrs r16, 0  ;If we want to turn on the 
-			rjmp TurnOffLater 
-				;Turn Left OFF
-				sbi PORTB, PB7 ; Turn the LED OFF by setting PB7 = 1
+			rjmp TurnOffRightLater 
+				;Turn Right OFF
+				sbi PORTB, PB0 ; Turn the LED OFF by setting PB0 = 1
 				ldi r16, 0
-				sts TurnOffLeftNext, r16	;TurnOffLeftNext = false
+				sts TurnOffRightNext, r16	;TurnOffRightNext = false
 
 				rjmp RightLED
 			
 			;Not Broken or TOLN
-			TurnOffLater:
-				;TurnOffLeftNext = true
+			TurnOffRightLater:
+				;TurnOffRightNext = true
 				ldi r16, 1
-				sts TurnOffLeftNext, r16
+				sts TurnOffRightNext, r16
 				;Do nothing
 
 
