@@ -1,9 +1,9 @@
 
-AVRASM ver. 2.1.57  \\engad.foe.auckland.ac.nz\engdfs\Home\ayeo722\Documents\RealTimeControlAssignment\AVR Assignment\AVR Assignment\AVR Assignment.asm Mon Sep 14 17:42:43 2015
+AVRASM ver. 2.1.57  \\engad.foe.auckland.ac.nz\engdfs\Home\ayeo722\Documents\RealTimeControlAssignment\AVR Assignment\AVR Assignment\AVR Assignment.asm Mon Sep 14 18:25:42 2015
 
 [builtin](2): Including file 'C:\Program Files (x86)\Atmel\Atmel Toolchain\AVR Assembler\Native\2.1.1175\avrassembler\Include\m8def.inc'
 \\engad.foe.auckland.ac.nz\engdfs\Home\ayeo722\Documents\RealTimeControlAssignment\AVR Assignment\AVR Assignment\AVR Assignment.asm(14): Including file 'C:\Program Files (x86)\Atmel\Atmel Toolchain\AVR Assembler\Native\2.1.1175\avrassembler\Include\m8def.inc'
-\\engad.foe.auckland.ac.nz\engdfs\Home\ayeo722\Documents\RealTimeControlAssignment\AVR Assignment\AVR Assignment\AVR Assignment.asm(66): Including file '\\engad.foe.auckland.ac.nz\engdfs\Home\ayeo722\Documents\RealTimeControlAssignment\AVR Assignment\AVR Assignment\MECHENG313A.inc'
+\\engad.foe.auckland.ac.nz\engdfs\Home\ayeo722\Documents\RealTimeControlAssignment\AVR Assignment\AVR Assignment\AVR Assignment.asm(69): Including file '\\engad.foe.auckland.ac.nz\engdfs\Home\ayeo722\Documents\RealTimeControlAssignment\AVR Assignment\AVR Assignment\MECHENG313A.inc'
                  
                  /*
                  
@@ -752,7 +752,7 @@ AVRASM ver. 2.1.57  \\engad.foe.auckland.ac.nz\engdfs\Home\ayeo722\Documents\Rea
                   *	COLLISION LED - PB4
                   *
                   *  Created: 4/08/2015 2:43:56 p.m.
-                  *   Author: xwan572 & ayeo722
+                  *   Authors: xwan572 & ayeo722
                   */ 
                  
                  
@@ -767,6 +767,9 @@ AVRASM ver. 2.1.57  \\engad.foe.auckland.ac.nz\engdfs\Home\ayeo722\Documents\Rea
 00006a           TurnOnLeftNext: .byte 1
 00006b           TurnOffLeftNext: .byte 1
 00006c           RightBroken: .byte 1
+                 
+00006d           TurnOnRightNext: .byte 1
+00006e           TurnOffRightNext: .byte 1
                  /*  ************ Instructions on using variables in program memory
                  .DSEG 
                  var1:  .BYTE 1 ; reserve 1 byte to var1 
@@ -784,15 +787,15 @@ AVRASM ver. 2.1.57  \\engad.foe.auckland.ac.nz\engdfs\Home\ayeo722\Documents\Rea
                  .org $00000					;Setting Origin Address
 000000 c2b0      		rjmp Main 			;Reset vector
                  .org INT0addr				;Setting Origin Address
-000001 c351      		rjmp IntV0 			;INT vector - for toggling the door state
+000001 c377      		rjmp IntV0 			;INT vector - for toggling the door state
                  .org INT1addr				;Setting Origin Address
-000002 c37c      		rjmp IntV1			;INT vector - for toggling the light state
+000002 c3a2      		rjmp IntV1			;INT vector - for toggling the light state
                  .org ADCCaddr
-00000e c34d      		rjmp ADCF0
+00000e c373      		rjmp ADCF0
                  .org OVF0addr				;Setting Origin Address
-000009 c2cb      		rjmp ClockTick 		;ClockTick vector
+000009 c2cd      		rjmp ClockTick 		;ClockTick vector
                  .org OVF1addr				;Setting Origin Address
-000008 c2d0      		rjmp ClockTickLeftRight 		;ClockTick vector
+000008 c2d2      		rjmp ClockTickLeftRight 		;ClockTick vector
                  
                  ;.cseg
                  .org   0x0100               ;table address engine speed (RPM) and load
@@ -1287,64 +1290,66 @@ AVRASM ver. 2.1.57  \\engad.foe.auckland.ac.nz\engdfs\Home\ayeo722\Documents\Rea
                  
 0002b9 9ac2      		sbi PORTB, PB2 ; Turns off Pin2 of PortB. Note the negative logic. For the collision detection
 0002ba 9ac4      		sbi PORTB, PB4	; Turns off Pin4 of PortB. For the door indicator. Door initialised as shut.
+0002bb 9ac7      		sbi PORTB, PB7	; Turns off Pin7 of PortB. LeftLED init as off
+0002bc 9ac0      		sbi PORTB, PB0	; Turns off Pin0 of PortB. RightLED init as off
                  		
-0002bb ec00      		ldi r16,(1<<INT0) | (1<<INT1); int mask 0 set +  (1<<INT1) 
-0002bc bf0b      		out GICR,r16
-0002bd e00a      		ldi r16,(1<<ISC01) | (1<<ISC11)		; interrupt t0 on falling edge
-0002be bf05      		out MCUCR,r16		;Interrupt Setup
+0002bd ec00      		ldi r16,(1<<INT0) | (1<<INT1); int mask 0 set +  (1<<INT1) 
+0002be bf0b      		out GICR,r16
+0002bf e00a      		ldi r16,(1<<ISC01) | (1<<ISC11)		; interrupt t0 on falling edge
+0002c0 bf05      		out MCUCR,r16		;Interrupt Setup
                  		
                  
                  		;********* ADC ********
                  		; set MUX to channel 2, left adjust the result, AREF taken from AVCC
-0002bf e001      		ldi r16, (1<<MUX0) ; ADMUX channel 2, AREF from AVCC PORTC
-0002c0 b907      		out ADMUX,r16
+0002c1 e001      		ldi r16, (1<<MUX0) ; ADMUX channel 2, AREF from AVCC PORTC
+0002c2 b907      		out ADMUX,r16
                  		; switch AD conversion on, start conversion, divider rate = 16
-0002c1 ee0c      		ldi r16, (1<<ADEN)|(1<<ADSC)|(1<<ADPS2)|(1<<ADFR)| (1<<ADIE)
-0002c2 b906      		out ADCSRA, r16
+0002c3 ee0c      		ldi r16, (1<<ADEN)|(1<<ADSC)|(1<<ADPS2)|(1<<ADFR)| (1<<ADIE)
+0002c4 b906      		out ADCSRA, r16
                  
                  
                  		;cbi DDRC,PC1		; DELETE ?
                  
                  		;********* ClockTick 8-bit Timer/Counter 0 *******      
-0002c3 e002      		ldi r16, (1<<CS01)      ; Start Counter 0      
-0002c4 bf03            	out TCCR0, r16			; Timer Clock = Sys Clock (1MHz) / 8 (prescaler)
+0002c5 e002      		ldi r16, (1<<CS01)      ; Start Counter 0      
+0002c6 bf03            	out TCCR0, r16			; Timer Clock = Sys Clock (1MHz) / 8 (prescaler)
                  		
-0002c5 e404      		ldi	r16, 68				; MaxValue = TOVck (1.5ms or your Cal time) * Pck (1MHz) / 8 (prescaler)
-0002c6 bf02      		out TCNT0, r16			; TCNT0Value = 255 - MaxValue	
+0002c7 e404      		ldi	r16, 68				; MaxValue = TOVck (1.5ms or your Cal time) * Pck (1MHz) / 8 (prescaler)
+0002c8 bf02      		out TCNT0, r16			; TCNT0Value = 255 - MaxValue	
                  		
                  
                  		;********* ClockTick 16-bit Timer/Counter 1 *******      
-0002c7 e002      		ldi r16, (1<<CS11)      ; Start Counter 0      
-0002c8 bd0e            	out TCCR1B, r16			; Timer Clock = Sys Clock (1MHz) / 8 (prescaler)
+0002c9 e002      		ldi r16, (1<<CS11)      ; Start Counter 0      
+0002ca bd0e            	out TCCR1B, r16			; Timer Clock = Sys Clock (1MHz) / 8 (prescaler)
                  		
                  		;to get 0.25ms per interrupt, TCNT1 = 34286 = $85EE
-0002c9 ee0e      		ldi	r16, $EE			; MaxValue = TOVck (1.5ms or your Cal time) * Pck (1MHz) / 8 (prescaler)
-0002ca bd0c      		out TCNT1L, r16			; TCNT0Value = 2^16 - MaxValue	
+0002cb ee0e      		ldi	r16, $EE			; MaxValue = TOVck (1.5ms or your Cal time) * Pck (1MHz) / 8 (prescaler)
+0002cc bd0c      		out TCNT1L, r16			; TCNT0Value = 2^16 - MaxValue	
                  
-0002cb e805      		ldi	r16, $85			; MaxValue = TOVck (1.5ms or your Cal time) * Pck (1MHz) / 8 (prescaler)
-0002cc bd0d      		out TCNT1H, r16			; TCNT0Value = 255 - MaxValue	
+0002cd e805      		ldi	r16, $85			; MaxValue = TOVck (1.5ms or your Cal time) * Pck (1MHz) / 8 (prescaler)
+0002ce bd0d      		out TCNT1H, r16			; TCNT0Value = 255 - MaxValue	
                  
                  
                  
                  
                  		;********* Clock Interrupts
-0002cd e005      		ldi r16, (1<<TOIE0) | (1<<TOIE1)     ; Enable interrupts for Counter 0 and 1       
-0002ce bf09      		out TIMSK, r16			; Enable Timer Overflow interrupt
+0002cf e005      		ldi r16, (1<<TOIE0) | (1<<TOIE1)     ; Enable interrupts for Counter 0 and 1       
+0002d0 bf09      		out TIMSK, r16			; Enable Timer Overflow interrupt
                  
                  
                  
                  
-0002cf e001      		ldi r16 , 1
-0002d0 9300 0067 		sts CounterSchedule, r16
+0002d1 e001      		ldi r16 , 1
+0002d2 9300 0067 		sts CounterSchedule, r16
                  
-0002d2 9478      		sei ; enable interrupts
+0002d4 9478      		sei ; enable interrupts
                  
                  		;********* Main infinite loop ********
                  forever:
                  		;Start_Task 1
-0002d3 d02e      		rcall MonitorTask
+0002d5 d052      		rcall MonitorTask
                  		;End_Task 1
-0002d4 cffe      		rjmp forever 
+0002d6 cffe      		rjmp forever 
                  ;*****************End of program *****************
                  
                  
@@ -1360,11 +1365,11 @@ AVRASM ver. 2.1.57  \\engad.foe.auckland.ac.nz\engdfs\Home\ayeo722\Documents\Rea
                  ;***************** Clock Tick Interrupt Service Routine *****************
                  ClockTick:
                  		;Start_Task 	ClockTick_Task	;Turn output indicator pin On
-0002d5 9478      		sei		;Enable interrupts!!!
+0002d7 9478      		sei		;Enable interrupts!!!
                  
                  		;********* Write ClockTick Code here ********
-0002d6 e404      		ldi	r16, 68		; MaxValue = TOVck (1.5ms or your Cal time) * Pck (1MHz) / 8 (prescaler)
-0002d7 bf02      		out TCNT0, r16			; TCNT0Value = 255 - MaxValue
+0002d8 e404      		ldi	r16, 68		; MaxValue = TOVck (1.5ms or your Cal time) * Pck (1MHz) / 8 (prescaler)
+0002d9 bf02      		out TCNT0, r16			; TCNT0Value = 255 - MaxValue
                  		
                  
                  		; FuelInjectionTimingTask HARD
@@ -1378,7 +1383,7 @@ AVRASM ver. 2.1.57  \\engad.foe.auckland.ac.nz\engdfs\Home\ayeo722\Documents\Rea
                  
                  
                  		;End_Task	ClockTick_Task	;Turn output indicator pin Off
-0002d8 9518      		RETI						;Return from Interurpt
+0002da 9518      		RETI						;Return from Interurpt
                  
                  
                  ;***************** End External Interrupt **********************
@@ -1386,14 +1391,14 @@ AVRASM ver. 2.1.57  \\engad.foe.auckland.ac.nz\engdfs\Home\ayeo722\Documents\Rea
                  ;***************** Clock Tick Interrupt Service Routine *****************
                  ClockTickLeftRight:
                  		
-0002d9 9478      		sei		;Enable interrupts!!!
+0002db 9478      		sei		;Enable interrupts!!!
                  		
                  				;to get 0.25ms per interrupt, TCNT1 = 34286 = $85EE
-0002da ee0e      		ldi	r16, $EE			; MaxValue = TOVck (1.5ms or your Cal time) * Pck (1MHz) / 8 (prescaler)
-0002db bd0c      		out TCNT1L, r16			; TCNT0Value = 2^16 - MaxValue	
+0002dc ee0e      		ldi	r16, $EE			; MaxValue = TOVck (1.5ms or your Cal time) * Pck (1MHz) / 8 (prescaler)
+0002dd bd0c      		out TCNT1L, r16			; TCNT0Value = 2^16 - MaxValue	
                  
-0002dc e805      		ldi	r16, $85			; MaxValue = TOVck (1.5ms or your Cal time) * Pck (1MHz) / 8 (prescaler)
-0002dd bd0d      		out TCNT1H, r16			; TCNT0Value = 255 - MaxValue	
+0002de e805      		ldi	r16, $85			; MaxValue = TOVck (1.5ms or your Cal time) * Pck (1MHz) / 8 (prescaler)
+0002df bd0d      		out TCNT1H, r16			; TCNT0Value = 255 - MaxValue	
                  
                  
                  		;********* Write ClockTick Code here ********
@@ -1401,63 +1406,124 @@ AVRASM ver. 2.1.57  \\engad.foe.auckland.ac.nz\engdfs\Home\ayeo722\Documents\Rea
                  
                  		
                  		;When LeftLED is OFF 
-0002de 9bc7      		sbis PORTB, PB7 ;Skip if Left is off (PB0 == 1)
-0002df c012      		rjmp LeftLEDON ; Left is actually ON
+0002e0 9bc7      		sbis PORTB, PB7 ;Skip if Left is off (PB0 == 1)
+0002e1 c012      		rjmp LeftLEDON ; Left is actually ON
                  
                  			;If Left is pressed
-0002e0 9997      			sbic PORTD, PD7 ;Check if LEFT button pressed (PD7 = 0), otherwise we RJMP to the right LED code
-0002e1 c01f      			rjmp RightLED ; Skipped if PD7 = 0
+0002e2 9987      			sbic PIND, PD7 ;Check if LEFT button pressed (PD7 = 0), otherwise we RJMP to the right LED code
+0002e3 c020      			rjmp RightLED ; Skipped if PD7 = 0
                  
                  				;If either Broken or TurnOnLeftNext
-0002e2 9100 0069 				lds r16, LeftBroken
-0002e4 9110 006a 				lds r17, TurnOnLeftNext
-0002e6 2b01      				or r16, r17 ; if LeftBroken OR TurnOnLeftNext, turn on LEFT. R16 = 1
-0002e7 ff00      				sbrs r16, 0  ;If we want to turn on the 
-0002e8 c005      				rjmp TurnOnLater 
+0002e4 9100 0069 				lds r16, LeftBroken
+0002e6 9110 006a 				lds r17, TurnOnLeftNext
+0002e8 2b01      				or r16, r17 ; if LeftBroken OR TurnOnLeftNext, turn on LEFT. R16 = 1
+0002e9 ff00      				sbrs r16, 0  ;If we want to turn on the 
+0002ea c005      				rjmp TurnOnLeftLater 
                  					;Turn Left ON
-0002e9 98c7      					cbi PORTB, PB7 ; Turn the LED ON by setting PB7 = 0
-0002ea e000      					ldi r16, 0
-0002eb 9300 006a 					sts TurnOnLeftNext, r16
+0002eb 98c7      					cbi PORTB, PB7 ; Turn the LED ON by setting PB7 = 0
+0002ec e000      					ldi r16, 0
+0002ed 9300 006a 					sts TurnOnLeftNext, r16
                  
-0002ed c013      					rjmp RightLED
+0002ef c014      					rjmp RightLED
                  
                  				;Not Broken or TOLN
-                 				TurnOnLater:
+                 				TurnOnLeftLater:
                  					;TurnOnLeftNext = true
-0002ee e001      					ldi r16, 1
-0002ef 9300 006a 					sts TurnOnLeftNext, r16
+0002f0 e001      					ldi r16, 1
+0002f1 9300 006a 					sts TurnOnLeftNext, r16
                  					;Do nothing
                  				
-0002f1 c00f      			rjmp RightLED
+0002f3 c010      			rjmp RightLED
                  
                  		LeftLEDON:
                  		;If LeftLED is ON
                  
                  			;If either Broken or TurnOffLeftNext
-0002f2 9100 0069 			lds r16, LeftBroken
-0002f4 9110 006b 			lds r17, TurnOffLeftNext
-0002f6 2b01      			or r16, r17 ; if LeftBroken OR TurnOnLeftNext, turn on LEFT. R16 = 1
-0002f7 ff00      			sbrs r16, 0  ;If we want to turn on the 
-0002f8 c005      			rjmp TurnOffLater 
+0002f4 9100 0069 			lds r16, LeftBroken
+0002f6 9110 006b 			lds r17, TurnOffLeftNext
+0002f8 2b01      			or r16, r17 ; if LeftBroken OR TurnOnLeftNext, turn on LEFT. R16 = 1
+0002f9 ff00      			sbrs r16, 0  ;If we want to turn on the 
+0002fa c005      			rjmp TurnOffLeftLater 
                  				;Turn Left OFF
-0002f9 9ac7      				sbi PORTB, PB7 ; Turn the LED OFF by setting PB7 = 1
-0002fa e000      				ldi r16, 0
-0002fb 9300 006b 				sts TurnOffLeftNext, r16	;TurnOffLeftNext = false
+0002fb 9ac7      				sbi PORTB, PB7 ; Turn the LED OFF by setting PB7 = 1
+0002fc e000      				ldi r16, 0
+0002fd 9300 006b 				sts TurnOffLeftNext, r16	;TurnOffLeftNext = false
                  
-0002fd c003      				rjmp RightLED
+0002ff c004      				rjmp RightLED
                  			
                  			;Not Broken or TOLN
-                 			TurnOffLater:
+                 			TurnOffLeftLater:
                  				;TurnOffLeftNext = true
-0002fe e001      				ldi r16, 1
-0002ff 9300 006b 				sts TurnOffLeftNext, r16
+000300 e001      				ldi r16, 1
+000301 9300 006b 				sts TurnOffLeftNext, r16
                  				;Do nothing
                  				
+000303 9518      			reti
+                 		
+                 		
+                 		
                  		RightLED:	
+                 
+                 		
+                 		;When RightLED is OFF 
+000304 9bc0      		sbis PORTB, PB0 ;Skip if Right is off (PB0 == 1)
+000305 c012      		rjmp RightLEDON ; Left is actually ON
+                 
+                 			;If Right is pressed
+000306 9980      			sbic PIND, PD0 ;Check if Right button pressed (PD0 = 0), otherwise return
+000307 9518      			reti ; Skipped if PD0 = 0
+                 
+                 				;If either Broken or TurnOnRightNext
+000308 9100 006c 				lds r16, RightBroken
+00030a 9110 006d 				lds r17, TurnOnRightNext
+00030c 2b01      				or r16, r17 ; if RightBroken OR TurnOnRightNext, turn on RIGHT. R16 = 1
+00030d ff00      				sbrs r16, 0  ;If we want to turn on the 
+00030e c005      				rjmp TurnOnRightLater 
+                 					;Turn RIGHT ON
+00030f 98c0      					cbi PORTB, PB0 ; Turn the LED ON by setting PB7 = 0
+000310 e000      					ldi r16, 0
+000311 9300 006d 					sts TurnOnRightNext, r16
+                 
+000313 9518      					reti
+                 
+                 				;Not Broken or TOLN
+                 				TurnOnRightLater:
+                 					;TurnOnRightNext = true
+000314 e001      					ldi r16, 1
+000315 9300 006d 					sts TurnOnRightNext, r16
+                 					;Do nothing
+                 					
+000317 9518      					reti
+                 			
+                 
+                 		RightLEDON:
+                 		;If RightLED is ON
+                 
+                 			;If either Broken or TurnOffRightNext
+000318 9100 006c 			lds r16, RightBroken
+00031a 9110 006e 			lds r17, TurnOffRightNext
+00031c 2b01      			or r16, r17 ; if RightBroken OR TurnOnRightNext, turn on Right. R16 = 1
+00031d ff00      			sbrs r16, 0  ;If we want to turn on the 
+00031e c005      			rjmp TurnOffRightLater 
+                 				;Turn Right OFF
+00031f 9ac0      				sbi PORTB, PB0 ; Turn the LED OFF by setting PB0 = 1
+000320 e000      				ldi r16, 0
+000321 9300 006e 				sts TurnOffRightNext, r16	;TurnOffRightNext = false
+                 
+000323 9518      				reti
+                 			
+                 			;Not Broken or TOLN
+                 			TurnOffRightLater:
+                 				;TurnOffRightNext = true
+000324 e001      				ldi r16, 1
+000325 9300 006e 				sts TurnOffRightNext, r16
+                 				;Do nothing
+                 
+                 
                  
                  				
                  		
-000301 9518      		RETI						;Return from Interurpt
+000327 9518      		RETI						;Return from Interurpt
                  
                  
                  ; ASYNC CODE
@@ -1481,29 +1547,29 @@ AVRASM ver. 2.1.57  \\engad.foe.auckland.ac.nz\engdfs\Home\ayeo722\Documents\Rea
                  
                  
                  MonitorTask:
-000302 b164      		in r22, ADCL
+000328 b164      		in r22, ADCL
                  		
                  		;Treat r18 (ADCL) as Fahrenheit and convert to celcius
                  
-000303 e210      		ldi r17, 32
+000329 e210      		ldi r17, 32
                  
-000304 1b61      		sub r22, r17
+00032a 1b61      		sub r22, r17
                  
-000305 e039      		ldi r19, 9
+00032b e039      		ldi r19, 9
                  
-000306 2788      		clr r24
-000307 2777      		clr r23
-000308 2755      		clr r21
-000309 2744      		clr r20
+00032c 2788      		clr r24
+00032d 2777      		clr r23
+00032e 2755      		clr r21
+00032f 2744      		clr r20
                  		;We divide by 9
-00030a df7c      		rcall div24x24_24 ;r24:r23:r22 = r24:r23:r22 / r21:r20:r19
+000330 df56      		rcall div24x24_24 ;r24:r23:r22 = r24:r23:r22 / r21:r20:r19
                  
-00030b e035      		ldi r19, 5
-00030c 9f63      		mul r22, r19
+000331 e035      		ldi r19, 5
+000332 9f63      		mul r22, r19
                  
-00030d 2d60      		mov r22, r0
+000333 2d60      		mov r22, r0
                  
-00030e 936f      		push r22
+000334 936f      		push r22
                  
                  				
                  
@@ -1511,136 +1577,136 @@ AVRASM ver. 2.1.57  \\engad.foe.auckland.ac.nz\engdfs\Home\ayeo722\Documents\Rea
                  		//L =us fl oz / 33.814
                  		//L =uk fl oz / 35.195
                  
-00030f b164      		in r22, ADCL
+000335 b164      		in r22, ADCL
                  
-000310 ee48      		ldi r20, low(1000)
-000311 e053      		ldi r21, high(1000)
-000312 2777      		clr r23
+000336 ee48      		ldi r20, low(1000)
+000337 e053      		ldi r21, high(1000)
+000338 2777      		clr r23
                  
-000313 def3      		rcall mul16x16_32 ;r19:r18:r17:r16 = r23:r22 * r21:r20
+000339 decd      		rcall mul16x16_32 ;r19:r18:r17:r16 = r23:r22 * r21:r20
                  
                  		
-000314 e136      		ldi r19, low(33814)
-000315 e844      		ldi r20, high(33814)
-000316 2755      		clr r21
+00033a e136      		ldi r19, low(33814)
+00033b e844      		ldi r20, high(33814)
+00033c 2755      		clr r21
                  
-000317 2f82      		mov r24, r18
-000318 2f71      		mov r23, r17
-000319 2f60      		mov r22, r16
+00033d 2f82      		mov r24, r18
+00033e 2f71      		mov r23, r17
+00033f 2f60      		mov r22, r16
                  
-00031a df6c      		rcall div24x24_24 ;r24:r23:r22 = r24:r23:r22 / r21:r20:r19
+000340 df46      		rcall div24x24_24 ;r24:r23:r22 = r24:r23:r22 / r21:r20:r19
                  
-00031b 2f76      		mov r23, r22
+000341 2f76      		mov r23, r22
                  		
-00031c 916f      		pop r22
+000342 916f      		pop r22
                  
-00031d 9508      		RET
+000343 9508      		RET
                  
                  
                  ;***************** Start of Task3 *****************
                  Task_3:	;Start_Task 	3	;Turn output indicator pin On
                  		
-00031e 930f      		 push r16
+000344 930f      		 push r16
                  
-00031f e0f2      		ldi ZH, high(RPMLoad_Lookup<<1)
-000320 e0e0      		ldi ZL, low(RPMLoad_Lookup<<1)
+000345 e0f2      		ldi ZH, high(RPMLoad_Lookup<<1)
+000346 e0e0      		ldi ZL, low(RPMLoad_Lookup<<1)
                  
                  		 ; Read 10-bit ADC conversion result ; optimisation possible
-000321 b124      		 in r18, ADCL
-000322 b135      		 in r19, ADCH
+000347 b124      		 in r18, ADCL
+000348 b135      		 in r19, ADCH
                  
                  		 ;mov r18, r16 ; low
                  		 ;mov r19, r17 ; high
                  		 
                  		 ;RPM Level Lookup stored in r21
-000323 2744      		 clr r20
-000324 fd27      		 sbrc r18, 7 ; Skip if bit 7 in ADCL is clear
-000325 6042      		 sbr r20, $02;
+000349 2744      		 clr r20
+00034a fd27      		 sbrc r18, 7 ; Skip if bit 7 in ADCL is clear
+00034b 6042      		 sbr r20, $02;
                  
-000326 fd26      		 sbrc r18, 6 ; Skip if bit 6 in ADCL is clear
-000327 6041      		 sbr r20, $01;
+00034c fd26      		 sbrc r18, 6 ; Skip if bit 6 in ADCL is clear
+00034d 6041      		 sbr r20, $01;
                  
-000328 e054      		 ldi r21, 4; store 4 in r20, used below
-000329 9f45      		 mul r20, r21; Multiply r20 (the ADC result) by 4 
+00034e e054      		 ldi r21, 4; store 4 in r20, used below
+00034f 9f45      		 mul r20, r21; Multiply r20 (the ADC result) by 4 
                  
-00032a 2d50      		 mov r21, r0 ; Move the result of the multiplication to r21
+000350 2d50      		 mov r21, r0 ; Move the result of the multiplication to r21
                  
                  		 ;Load lookup stored in r20
-00032b 2744      		 clr r20
-00032c fd25      		 sbrc r18,  5; Skip if bit 5 in ADCL is clear
-00032d 6042      		 sbr r20, $02;
+000351 2744      		 clr r20
+000352 fd25      		 sbrc r18,  5; Skip if bit 5 in ADCL is clear
+000353 6042      		 sbr r20, $02;
                  
-00032e fd24      		 sbrc r18, 4 ; Skip if bit 4 in ADCL is clear
-00032f 6041      		 sbr r20, $01;
+000354 fd24      		 sbrc r18, 4 ; Skip if bit 4 in ADCL is clear
+000355 6041      		 sbr r20, $01;
                  
-000330 0f54      		 add r21, r20 ; Add the load to the previous RPM level
+000356 0f54      		 add r21, r20 ; Add the load to the previous RPM level
                  
-000331 0fe5      		 add ZL, r21
+000357 0fe5      		 add ZL, r21
                  
-000332 9164      		 lpm r22, z
+000358 9164      		 lpm r22, z
                  
                  
                  
                  		 //Factor A lookup
-000333 e0f2      		 ldi ZH, high(FactorA_Lookup<<1)
-000334 e1e0      		 ldi ZL, low(FactorA_Lookup<<1)
+000359 e0f2      		 ldi ZH, high(FactorA_Lookup<<1)
+00035a e1e0      		 ldi ZL, low(FactorA_Lookup<<1)
                  
                  
-000335 2744      		 clr r20
-000336 fd23      		 sbrc r18,  3; Skip if bit 3 in ADCL is clear
-000337 6042      		 sbr r20, $02;
+00035b 2744      		 clr r20
+00035c fd23      		 sbrc r18,  3; Skip if bit 3 in ADCL is clear
+00035d 6042      		 sbr r20, $02;
                  
-000338 fd22      		 sbrc r18, 2 ; Skip if bit 2 in ADCL is clear
-000339 6041      		 sbr r20, $01;
+00035e fd22      		 sbrc r18, 2 ; Skip if bit 2 in ADCL is clear
+00035f 6041      		 sbr r20, $01;
                  
-00033a 0fe4      		 add ZL, r20
+000360 0fe4      		 add ZL, r20
                  
-00033b 9174      		 lpm r23, z
+000361 9174      		 lpm r23, z
                  
                  
                  		 //Factor B lookup
-00033c e0f2      		 ldi ZH, high(FactorB_Lookup<<1)
-00033d e1e4      		 ldi ZL, low(FactorB_Lookup<<1)
+000362 e0f2      		 ldi ZH, high(FactorB_Lookup<<1)
+000363 e1e4      		 ldi ZL, low(FactorB_Lookup<<1)
                  
                  
-00033e 2744      		 clr r20
-00033f fd21      		 sbrc r18,  1; Skip if bit 1 in ADCL is clear
-000340 6042      		 sbr r20, $02;
+000364 2744      		 clr r20
+000365 fd21      		 sbrc r18,  1; Skip if bit 1 in ADCL is clear
+000366 6042      		 sbr r20, $02;
                  
-000341 fd20      		 sbrc r18, 0; Skip if bit 0 in ADCL is clear
-000342 6041      		 sbr r20, $01;
+000367 fd20      		 sbrc r18, 0; Skip if bit 0 in ADCL is clear
+000368 6041      		 sbr r20, $01;
                  
-000343 0fe4      		 add ZL, r20
+000369 0fe4      		 add ZL, r20
                  
-000344 9184      		 lpm r24, z
+00036a 9184      		 lpm r24, z
                  
                  
                  		 //Calculate Pulse Width
                  
                  		 
-000345 9f76      		 mul r23, r22
+00036b 9f76      		 mul r23, r22
                  
-000346 2d70      		 mov r23,r0
+00036c 2d70      		 mov r23,r0
                  
-000347 9f87      		 mul r24, r23 ; x FactorB
+00036d 9f87      		 mul r24, r23 ; x FactorB
                  
-000348 2d71      		 mov r23, r1
-000349 2d60      		 mov r22, r0
+00036e 2d71      		 mov r23, r1
+00036f 2d60      		 mov r22, r0
                  
-00034a e238      		 ldi r19, 40; divisor
+000370 e238      		 ldi r19, 40; divisor
                  
-00034b 2788      		 clr r24;
-00034c 2755      		 clr r21;
-00034d 2744      		 clr r20;
+000371 2788      		 clr r24;
+000372 2755      		 clr r21;
+000373 2744      		 clr r20;
                  		 ;Finally we divide by 40
-00034e df38      		 rcall div24x24_24 ;r24:r23:r22 = r24:r23:r22 / r21:r20:r19
+000374 df12      		 rcall div24x24_24 ;r24:r23:r22 = r24:r23:r22 / r21:r20:r19
                  		 
-00034f 9360 0068 		 sts PulseWidth, r22
+000375 9360 0068 		 sts PulseWidth, r22
                  
                  
-000351 910f      		 pop r16
+000377 910f      		 pop r16
                  		; End_Task	3	;Turn output indicator pin Off
-000352 9508      		RET
+000378 9508      		RET
                  ;***************** End Task3 **********************
                  
                  
@@ -1650,24 +1716,24 @@ AVRASM ver. 2.1.57  \\engad.foe.auckland.ac.nz\engdfs\Home\ayeo722\Documents\Rea
                  ; DOOR OPEN LIGHT LED PB4
                  
                  IntV0:
-000353 930f      		push r16
-000354 9478      		sei ; Enable interrupts.
+000379 930f      		push r16
+00037a 9478      		sei ; Enable interrupts.
                  
                  		;Check the PB2 bit. If it is set, the door WAS shut (LED off) and it's now open. We want to turn ON the LED. 
-000355 99c2      		sbic PORTB, PB2
-000356 c002      		rjmp door_shut
+00037b 99c2      		sbic PORTB, PB2
+00037c c002      		rjmp door_shut
                  
                  		;if door was open (PB4 == 0), it is shut now
                  		
-000357 9ac2      		sbi PORTB, PB2  ;SET the door LED - LED is OFF
-000358 9518      		RETI			;Return from Interurpt
+00037d 9ac2      		sbi PORTB, PB2  ;SET the door LED - LED is OFF
+00037e 9518      		RETI			;Return from Interurpt
                  
                  		door_shut:
                  		;if door was shut, we set it as open
-000359 98c2      		cbi PORTB, PB2	;Clear the door LED - LED is ON 
+00037f 98c2      		cbi PORTB, PB2	;Clear the door LED - LED is ON 
                  
-00035a 910f      		pop r16
-00035b 9518      		RETI			;Return from Interurpt
+000380 910f      		pop r16
+000381 9518      		RETI			;Return from Interurpt
                  ;***************** End External Interrupt **********************
                  
                  
@@ -1677,37 +1743,37 @@ AVRASM ver. 2.1.57  \\engad.foe.auckland.ac.nz\engdfs\Home\ayeo722\Documents\Rea
                  ADCF0:	;Start_Task 	2 	;Turn output indicator pin On
                  		
                  		;********* Write Task  here ********
-00035c b164      		in r22, ADCL
-00035d b175      		in r23, ADCH
-00035e 2744      		clr r20
+000382 b164      		in r22, ADCL
+000383 b175      		in r23, ADCH
+000384 2744      		clr r20
                  
                  		;obtain 2 LSB of ADCH, store in r20
-00035f fd71      		sbrc r23,  1; Skip if bit 1 in ADCH is clear
-000360 6048      		sbr r20, $08;
+000385 fd71      		sbrc r23,  1; Skip if bit 1 in ADCH is clear
+000386 6048      		sbr r20, $08;
                  
-000361 fd70      		sbrc r23, 0; Skip if bit 0 in ADCH is clear
-000362 6044      		sbr r20, $04;
+000387 fd70      		sbrc r23, 0; Skip if bit 0 in ADCH is clear
+000388 6044      		sbr r20, $04;
                  
                  
                  		;obtain 2 MSB of ADCL, store in r20
-000363 fd67      		sbrc r22,  7; Skip if bit 7 in ADCL is clear
-000364 6042      		sbr r20, $02;
+000389 fd67      		sbrc r22,  7; Skip if bit 7 in ADCL is clear
+00038a 6042      		sbr r20, $02;
                  
-000365 fd66      		sbrc r22, 6; Skip if bit 6 in ADCL is clear
-000366 6041      		sbr r20, $01;
+00038b fd66      		sbrc r22, 6; Skip if bit 6 in ADCL is clear
+00038c 6041      		sbr r20, $01;
                  
                  		
-000367 3044      		cpi r20, 4
-000368 f410      		brsh collision
-000369 9ac4      		sbi PORTB, PB4 ;Collision has NOT occurred. Turn off LED at PB4 by setting the bit
+00038d 3044      		cpi r20, 4
+00038e f410      		brsh collision
+00038f 9ac4      		sbi PORTB, PB4 ;Collision has NOT occurred. Turn off LED at PB4 by setting the bit
                  				
-00036a 9518      		RETI
+000390 9518      		RETI
                  
                  
                  		collision:
-00036b 98c4      		cbi PORTB, PB4 ;Collision has occurred. Turn on LED at PB4 by clearing the bit
+000391 98c4      		cbi PORTB, PB4 ;Collision has occurred. Turn on LED at PB4 by clearing the bit
                  				
-00036c 9518      		RETI
+000392 9518      		RETI
                  		
                  		;end of collision
                  		
@@ -1715,7 +1781,7 @@ AVRASM ver. 2.1.57  \\engad.foe.auckland.ac.nz\engdfs\Home\ayeo722\Documents\Rea
                  		;************************************
                  		
                  		;End_Task	2	;Turn output indicator pin Off
-00036d 9518      		RETI
+000393 9518      		RETI
                  ;***************** End Task1 **********************
                  
                  
@@ -1725,51 +1791,51 @@ AVRASM ver. 2.1.57  \\engad.foe.auckland.ac.nz\engdfs\Home\ayeo722\Documents\Rea
                  
                  ;***************** Start of Task1 *****************
                  Task_1:	;Start_Task 	1 	;Turn output indicator pin On
-00036e 930f      		push r16
+000394 930f      		push r16
                  		;********* Write Task 1 here ********
                  		;ldi r22, low(Mass); load low bit 
                  		;ldi r23, high(Mass); low high bit
                  		;ldi r21, Velocity; load velocity
-00036f 9f55      		mul r21, r21; mul has to
-000370 2d51      		mov r21, r1
-000371 2d40      		mov r20, r0
-000372 de94      		rcall mul16x16_32; r19:r18:r17:r16 = r23:r22 * r21:r20
-000373 2f82      		mov r24, r18
-000374 2f71      		mov r23, r17
-000375 2f60      		mov r22, r16
-000376 e032      		ldi r19, 2;
-000377 e050      		ldi r21, 0
-000378 e040      		ldi r20, 0
-000379 2722      		clr r18
-00037a 2711      		clr r17
-00037b 2700      		clr r16
-00037c df0a      		rcall div24x24_24; r24:r23:r22 = r24:r23:r22 / r21:r20:r19
+000395 9f55      		mul r21, r21; mul has to
+000396 2d51      		mov r21, r1
+000397 2d40      		mov r20, r0
+000398 de6e      		rcall mul16x16_32; r19:r18:r17:r16 = r23:r22 * r21:r20
+000399 2f82      		mov r24, r18
+00039a 2f71      		mov r23, r17
+00039b 2f60      		mov r22, r16
+00039c e032      		ldi r19, 2;
+00039d e050      		ldi r21, 0
+00039e e040      		ldi r20, 0
+00039f 2722      		clr r18
+0003a0 2711      		clr r17
+0003a1 2700      		clr r16
+0003a2 dee4      		rcall div24x24_24; r24:r23:r22 = r24:r23:r22 / r21:r20:r19
                  		;ldi r19, Distance
                  		;rcall div24x24_24;
                  
                  
                  		;************************************
-00037d 910f      		pop r16
+0003a3 910f      		pop r16
                  		;End_Task	1	;Turn output indicator pin Off
-00037e 9518      		RETI
+0003a4 9518      		RETI
                  ;***************** End Task1 **********************
                  
                  
                  ;Test ISR
                  ;To use, connect P
                  IntV1:
-00037f 930f      		push r16
+0003a5 930f      		push r16
                  
-000380 e001      		ldi r16, 1
+0003a6 e001      		ldi r16, 1
                  		
-000381 9b85      		sbis PIND, PD5 ; Left Broken toggle
-000382 d004      		rcall LeftStatusToggle	;change the state of the left switch
+0003a7 9b85      		sbis PIND, PD5 ; Left Broken toggle
+0003a8 d004      		rcall LeftStatusToggle	;change the state of the left switch
                  
-000383 9b84      		sbis PIND, PD4; Right Broken toggle
-000384 d00e      		rcall RightStatusToggle ;change the state of the right switch
+0003a9 9b84      		sbis PIND, PD4; Right Broken toggle
+0003aa d00e      		rcall RightStatusToggle ;change the state of the right switch
                  
-000385 910f      		pop r16
-000386 9518      		reti
+0003ab 910f      		pop r16
+0003ac 9518      		reti
                  
                  
                  
@@ -1778,38 +1844,38 @@ AVRASM ver. 2.1.57  \\engad.foe.auckland.ac.nz\engdfs\Home\ayeo722\Documents\Rea
                  ;Left toggle
                  LeftStatusToggle:
                  		
-000387 9100 0069 		lds r16, LeftBroken
+0003ad 9100 0069 		lds r16, LeftBroken
                  
-000389 3001      		cpi r16, 1
-00038a f021      		breq SetLeftTo0
+0003af 3001      		cpi r16, 1
+0003b0 f021      		breq SetLeftTo0
                  		
-00038b e001      		ldi r16, 1
-00038c 9300 0069 		sts LeftBroken, r16
-00038e 9508      		ret
+0003b1 e001      		ldi r16, 1
+0003b2 9300 0069 		sts LeftBroken, r16
+0003b4 9508      		ret
                  		
                  		SetLeftTo0:
                  
-00038f e000      		ldi r16, 0
-000390 9300 0069 		sts LeftBroken, r16
-000392 9508      		ret
+0003b5 e000      		ldi r16, 0
+0003b6 9300 0069 		sts LeftBroken, r16
+0003b8 9508      		ret
                  
                  ;Right toggle
                  RightStatusToggle:
                  
-000393 9100 006c 		lds r16, RightBroken
+0003b9 9100 006c 		lds r16, RightBroken
                  
-000395 3001      		cpi r16, 1
-000396 f021      		breq SetRightTo0
+0003bb 3001      		cpi r16, 1
+0003bc f021      		breq SetRightTo0
                  		
-000397 e001      		ldi r16, 1
-000398 9300 006c 		sts RightBroken, r16
-00039a 9508      		ret
+0003bd e001      		ldi r16, 1
+0003be 9300 006c 		sts RightBroken, r16
+0003c0 9508      		ret
                  		
                  		SetRightTo0:
                  
-00039b e000      		ldi r16, 0
-00039c 9300 006c 		sts RightBroken, r16
-00039e 9508      		ret
+0003c1 e000      		ldi r16, 0
+0003c2 9300 006c 		sts RightBroken, r16
+0003c4 9508      		ret
 
 
 RESOURCE USE INFORMATION
@@ -1829,7 +1895,7 @@ counted separately from r26..r31 here.
 "ATmega8" register use summary:
 r0 :  36 r1 :  31 r2 :  41 r3 :   0 r4 :   5 r5 :   4 r6 :   0 r7 :   0 
 r8 :   0 r9 :   0 r10:   0 r11:   0 r12:   0 r13:   0 r14:   0 r15:   0 
-r16:  82 r17:  37 r18:  42 r19:  45 r20:  51 r21:  31 r22:  36 r23:  31 
+r16:  96 r17:  41 r18:  42 r19:  45 r20:  51 r21:  31 r22:  36 r23:  31 
 r24:   7 r25:   2 r26:   0 r27:   0 r28:   0 r29:   0 r30:   6 r31:   3 
 x  :   0 y  :   0 z  :   3 
 Registers used: 18 out of 35 (51.4%)
@@ -1840,27 +1906,27 @@ andi  :   0 asr   :   0 bclr  :   0 bld   :   0 brbc  :   0 brbs  :   0
 brcc  :   2 brcs  :   0 breq  :   2 brge  :   0 brhc  :   0 brhs  :   0 
 brid  :   0 brie  :   0 brlo  :   0 brlt  :   0 brmi  :   0 brne  :   2 
 brpl  :   0 brsh  :   1 brtc  :   0 brts  :   0 brvc  :   0 brvs  :   0 
-bset  :   0 bst   :   0 cbi   :   3 cbr   :   0 clc   :   2 clh   :   0 
+bset  :   0 bst   :   0 cbi   :   4 cbr   :   0 clc   :   2 clh   :   0 
 cli   :   0 cln   :   0 clr   :  26 cls   :   0 clt   :   0 clv   :   0 
 clz   :   0 com   :   0 cp    :   0 cpc   :   0 cpi   :   3 cpse  :   0 
 dec   :   2 eor   :   0 fmul  :   3 fmuls :   3 fmulsu:   6 icall :   0 
-ijmp  :   0 in    :   6 inc   :   0 ld    :   0 ldd   :   0 ldi   :  45 
-lds   :   6 lpm   :   6 lsl   :   0 lsr   :   0 mov   :  14 movw  :   9 
-mul   :  15 muls  :   3 mulsu :   6 neg   :   0 nop   :   0 or    :   2 
+ijmp  :   0 in    :   6 inc   :   0 ld    :   0 ldd   :   0 ldi   :  49 
+lds   :  10 lpm   :   6 lsl   :   0 lsr   :   0 mov   :  14 movw  :   9 
+mul   :  15 muls  :   3 mulsu :   6 neg   :   0 nop   :   0 or    :   4 
 ori   :   0 out   :  15 pop   :   5 push  :   5 rcall :  11 ret   :  18 
-reti  :   9 rjmp  :  19 rol   :   8 ror   :   0 sbc   :  14 sbci  :   0 
-sbi   :   9 sbic  :   2 sbis  :   3 sbiw  :   0 sbr   :  12 sbrc  :  12 
-sbrs  :   2 sec   :   2 seh   :   0 sei   :   4 sen   :   0 ser   :   0 
+reti  :  14 rjmp  :  22 rol   :   8 ror   :   0 sbc   :  14 sbci  :   0 
+sbi   :  12 sbic  :   3 sbis  :   4 sbiw  :   0 sbr   :  12 sbrc  :  12 
+sbrs  :   4 sec   :   2 seh   :   0 sei   :   4 sen   :   0 ser   :   0 
 ses   :   0 set   :   0 sev   :   0 sez   :   0 sleep :   0 spm   :   0 
-st    :   0 std   :   0 sts   :  10 sub   :   5 subi  :   0 swap  :   0 
+st    :   0 std   :   0 sts   :  14 sub   :   5 subi  :   0 swap  :   0 
 tst   :   0 wdr   :   0 
 Instructions used: 43 out of 110 (39.1%)
 
 "ATmega8" memory use summary [bytes]:
 Segment   Begin    End      Code   Data   Used    Size   Use%
 ---------------------------------------------------------------
-[.cseg] 0x000000 0x00073e    842     24    866    8192  10.6%
-[.dseg] 0x000060 0x00006d      0      6      6    1024   0.6%
+[.cseg] 0x000000 0x00078a    918     24    942    8192  11.5%
+[.dseg] 0x000060 0x00006f      0      8      8    1024   0.8%
 [.eseg] 0x000000 0x000000      0      0      0     512   0.0%
 
 Assembly complete, 0 errors, 0 warnings

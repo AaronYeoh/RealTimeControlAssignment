@@ -6,7 +6,7 @@
  *	COLLISION LED - PB4
  *
  *  Created: 4/08/2015 2:43:56 p.m.
- *   Author: xwan572 & ayeo722
+ *   Authors: xwan572 & ayeo722
  */ 
 
 
@@ -173,7 +173,7 @@ ClockTick:
 		ldi	r16, 68		; MaxValue = TOVck (1.5ms or your Cal time) * Pck (1MHz) / 8 (prescaler)
 		out TCNT0, r16			; TCNT0Value = 255 - MaxValue
 		
-
+		;rcall IntV1
 		; FuelInjectionTimingTask HARD
 		; Every nth tick, run the timing subroutine
 
@@ -212,7 +212,7 @@ ClockTickLeftRight:
 		rjmp LeftLEDON ; Left is actually ON
 
 			;If Left is pressed
-			sbic PORTD, PD7 ;Check if LEFT button pressed (PD7 = 0), otherwise we RJMP to the right LED code
+			sbic PIND, PD7 ;Check if LEFT button pressed (PD7 = 0), otherwise we RJMP to the right LED code
 			rjmp RightLED ; Skipped if PD7 = 0
 
 				;If either Broken or TurnOnLeftNext
@@ -260,7 +260,7 @@ ClockTickLeftRight:
 				sts TurnOffLeftNext, r16
 				;Do nothing
 				
-			reti ; WARN: BOTTOM WILL NOT RUN
+			reti
 		
 		
 		
@@ -272,7 +272,7 @@ ClockTickLeftRight:
 		rjmp RightLEDON ; Left is actually ON
 
 			;If Right is pressed
-			sbic PORTD, PD0 ;Check if Right button pressed (PD0 = 0), otherwise return
+			sbic PIND, PD0 ;Check if Right button pressed (PD0 = 0), otherwise return
 			reti ; Skipped if PD0 = 0
 
 				;If either Broken or TurnOnRightNext
@@ -286,7 +286,7 @@ ClockTickLeftRight:
 					ldi r16, 0
 					sts TurnOnRightNext, r16
 
-					rjmp RightLED
+					reti
 
 				;Not Broken or TOLN
 				TurnOnRightLater:
@@ -294,8 +294,9 @@ ClockTickLeftRight:
 					ldi r16, 1
 					sts TurnOnRightNext, r16
 					;Do nothing
-				
-			rjmp RightLED
+					
+					reti
+			
 
 		RightLEDON:
 		;If RightLED is ON
@@ -311,7 +312,7 @@ ClockTickLeftRight:
 				ldi r16, 0
 				sts TurnOffRightNext, r16	;TurnOffRightNext = false
 
-				rjmp RightLED
+				reti
 			
 			;Not Broken or TOLN
 			TurnOffRightLater:
