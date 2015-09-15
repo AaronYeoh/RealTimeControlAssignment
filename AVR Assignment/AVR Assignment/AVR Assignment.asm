@@ -90,6 +90,12 @@ Main:
 		sbi DDRB, PB4
 		sbi DDRB, PB7
 
+		;
+		ldi r16, $FF;
+		out PORTD, r16
+		clr r16
+		out DDRD, r16
+
 		sbi PORTB, PB2 ; Turns off Pin2 of PortB. Note the negative logic. For the collision detection
 		sbi PORTB, PB4	; Turns off Pin4 of PortB. For the door indicator. Door initialised as shut.
 		sbi PORTB, PB7	; Turns off Pin7 of PortB. LeftLED init as off
