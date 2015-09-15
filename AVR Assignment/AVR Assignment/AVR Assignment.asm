@@ -16,8 +16,8 @@
 
 .dseg 						; Start data segment
 .org 0x67 					; Set SRAM address to hex 67
-CounterSchedule: .byte 1 ; Reserve a byte at SRAM for CounterSchedule
-PulseWidth: .byte 1
+;CounterSchedule: .byte 1 ; Reserve a byte at SRAM for CounterSchedule
+PulseWidth: .byte 1 
 
 LeftBroken: .byte 1
 TurnOnLeftNext: .byte 1
@@ -26,6 +26,8 @@ RightBroken: .byte 1
 
 TurnOnRightNext: .byte 1
 TurnOffRightNext: .byte 1
+
+PulseCounterSchedule: .byte 1 ; reserve 1 byte for counter of Task_3
 /*  ************ Instructions on using variables in program memory
 .DSEG 
 var1:  .BYTE 1 ; reserve 1 byte to var1 
@@ -85,12 +87,12 @@ Main:
 		;sbi PORTD,PD2		; Test code. Turns on an LED
 
 		;Set the DDR for PORTB, allowing for us to write out
-		sbi DDRB, PB0
-		sbi DDRB, PB2  ;
-		sbi DDRB, PB4
-		sbi DDRB, PB7
+		sbi DDRB, PB0; left LED
+		sbi DDRB, PB2  ;door LED
+		sbi DDRB, PB4; collision LED
+		sbi DDRB, PB7; right LED
 
-		;
+		;Set everything high in PORTD, set DDRD to be input only
 		ldi r16, $FF;
 		out PORTD, r16
 		clr r16
@@ -148,14 +150,16 @@ Main:
 
 
 		ldi r16 , 1
-		sts CounterSchedule, r16
+		sts PulseCounterSchedule, r16
+		sts PulseWidth, r16
+		
 
 		sei ; enable interrupts
 
 		;********* Main infinite loop ********
 forever:
 		;Start_Task 1
-		rcall MonitorTask
+		;rcall MonitorTask
 		;End_Task 1
 		rjmp forever 
 ;*****************End of program *****************
@@ -176,18 +180,35 @@ ClockTick:
 		sei		;Enable interrupts!!!
 
 		;********* Write ClockTick Code here ********
-		ldi	r16, 68		; MaxValue = TOVck (1.5ms or your Cal time) * Pck (1MHz) / 8 (prescaler)
-		out TCNT0, r16			; TCNT0Value = 255 - MaxValue
+		
 		
 		;rcall IntV1
 		; FuelInjectionTimingTask HARD
 		; Every nth tick, run the timing subroutine
 
 
-		; CarMonitorTask SOFT
+		rcall MonitorTask
+		
 		; Every tick, read ADCL and:
 		; convert from fahrenheit to degrees C
 		; convert from Fluid Ounces to Litres 
+
+
+		lds r16, PulseCounterSchedule
+		lds r17, PulseWidth
+		
+		cp r16, r17
+		brne SkipTask
+		rcall Task_3
+		
+		clr r16
+		clr r17
+
+		SkipTask:
+		inc r16
+		sts PulseCounterSchedule, r16
+
+
 
 
 		;End_Task	ClockTick_Task	;Turn output indicator pin Off
@@ -509,10 +530,24 @@ Task_3:	;Start_Task 	3	;Turn output indicator pin On
 		 ;Finally we divide by 40
 		 rcall div24x24_24 ;r24:r23:r22 = r24:r23:r22 / r21:r20:r19
 		 
+		 ldi r19,2
+
+		 rcall div24x24_24 ;r24:r23:r22 = r24:r23:r22 / r21:r20:r19
+
 		 sts PulseWidth, r22
 
-
 		 pop r16
+		 
+		 ;error check if PulseWidth is 0, if true then branch to set it to 1, otherwise do nothing
+		 cpi r22, 0
+		 breq SetToOne
+		 ret
+
+
+		 SetToOne:
+		 ldi r22, 1
+		 sts PulseWidth, r22
+		 
 		; End_Task	3	;Turn output indicator pin Off
 		RET
 ;***************** End Task3 **********************
