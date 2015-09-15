@@ -289,7 +289,7 @@ ClockTickLeftRight:
 				sts TurnOffLeftNext, r16
 				;Do nothing
 				
-			reti
+			
 		
 		
 		
