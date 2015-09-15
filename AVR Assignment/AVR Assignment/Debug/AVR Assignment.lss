@@ -1,5 +1,5 @@
 
-AVRASM ver. 2.1.52  C:\Users\Mike\Documents\RealTimeControlAssignment\AVR Assignment\AVR Assignment\AVR Assignment.asm Tue Sep 15 14:30:59 2015
+AVRASM ver. 2.1.52  C:\Users\Mike\Documents\RealTimeControlAssignment\AVR Assignment\AVR Assignment\AVR Assignment.asm Tue Sep 15 15:12:05 2015
 
 [builtin](2): Including file 'C:\Program Files (x86)\Atmel\Atmel Studio 6.0\extensions\Atmel\AVRAssembler\2.1.51.64\AvrAssembler/Include\m8def.inc'
 C:\Users\Mike\Documents\RealTimeControlAssignment\AVR Assignment\AVR Assignment\AVR Assignment.asm(14): Including file 'C:\Program Files (x86)\Atmel\Atmel Studio 6.0\extensions\Atmel\AVRAssembler\2.1.51.64\AvrAssembler/Include\m8def.inc'
@@ -1401,6 +1401,8 @@ C:\Users\Mike\Documents\RealTimeControlAssignment\AVR Assignment\AVR Assignment\
                  		
 0002e5 2700      		clr r16
 0002e6 2711      		clr r17
+                 		
+                 
                  
                  		SkipTask:
 0002e7 9503      		inc r16

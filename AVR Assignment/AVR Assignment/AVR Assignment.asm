@@ -187,7 +187,7 @@ ClockTick:
 		; Every nth tick, run the timing subroutine
 
 
-		rcall MonitorTask
+		
 		
 		; Every tick, read ADCL and:
 		; convert from fahrenheit to degrees C
@@ -203,13 +203,15 @@ ClockTick:
 		
 		clr r16
 		clr r17
+		
+
 
 		SkipTask:
 		inc r16
 		sts PulseCounterSchedule, r16
 
 
-
+		rcall MonitorTask
 
 		;End_Task	ClockTick_Task	;Turn output indicator pin Off
 		RETI						;Return from Interurpt

@@ -30,11 +30,11 @@
   <TurnOffRightNext><FILE>C:\Users\Mike\Documents\RealTimeControlAssignment\AVR Assignment\AVR Assignment\AVR Assignment.asm</FILE><LINE>28</LINE></TurnOffRightNext>
   <PulseCounterSchedule><FILE>C:\Users\Mike\Documents\RealTimeControlAssignment\AVR Assignment\AVR Assignment\AVR Assignment.asm</FILE><LINE>30</LINE></PulseCounterSchedule>
   <Main><FILE>C:\Users\Mike\Documents\RealTimeControlAssignment\AVR Assignment\AVR Assignment\AVR Assignment.asm</FILE><LINE>78</LINE></Main>
-  <IntV0><FILE>C:\Users\Mike\Documents\RealTimeControlAssignment\AVR Assignment\AVR Assignment\AVR Assignment.asm</FILE><LINE>561</LINE></IntV0>
-  <IntV1><FILE>C:\Users\Mike\Documents\RealTimeControlAssignment\AVR Assignment\AVR Assignment\AVR Assignment.asm</FILE><LINE>669</LINE></IntV1>
-  <ADCF0><FILE>C:\Users\Mike\Documents\RealTimeControlAssignment\AVR Assignment\AVR Assignment\AVR Assignment.asm</FILE><LINE>586</LINE></ADCF0>
+  <IntV0><FILE>C:\Users\Mike\Documents\RealTimeControlAssignment\AVR Assignment\AVR Assignment\AVR Assignment.asm</FILE><LINE>563</LINE></IntV0>
+  <IntV1><FILE>C:\Users\Mike\Documents\RealTimeControlAssignment\AVR Assignment\AVR Assignment\AVR Assignment.asm</FILE><LINE>671</LINE></IntV1>
+  <ADCF0><FILE>C:\Users\Mike\Documents\RealTimeControlAssignment\AVR Assignment\AVR Assignment\AVR Assignment.asm</FILE><LINE>588</LINE></ADCF0>
   <ClockTick><FILE>C:\Users\Mike\Documents\RealTimeControlAssignment\AVR Assignment\AVR Assignment\AVR Assignment.asm</FILE><LINE>178</LINE></ClockTick>
-  <ClockTickLeftRight><FILE>C:\Users\Mike\Documents\RealTimeControlAssignment\AVR Assignment\AVR Assignment\AVR Assignment.asm</FILE><LINE>221</LINE></ClockTickLeftRight>
+  <ClockTickLeftRight><FILE>C:\Users\Mike\Documents\RealTimeControlAssignment\AVR Assignment\AVR Assignment\AVR Assignment.asm</FILE><LINE>223</LINE></ClockTickLeftRight>
   <RPMLoad_Lookup><FILE>C:\Users\Mike\Documents\RealTimeControlAssignment\AVR Assignment\AVR Assignment\AVR Assignment.asm</FILE><LINE>61</LINE></RPMLoad_Lookup>
   <FactorA_Lookup><FILE>C:\Users\Mike\Documents\RealTimeControlAssignment\AVR Assignment\AVR Assignment\AVR Assignment.asm</FILE><LINE>64</LINE></FactorA_Lookup>
   <FactorB_Lookup><FILE>C:\Users\Mike\Documents\RealTimeControlAssignment\AVR Assignment\AVR Assignment\AVR Assignment.asm</FILE><LINE>67</LINE></FactorB_Lookup>
@@ -56,23 +56,23 @@
   <d8u_3><FILE>C:\Users\Mike\Documents\RealTimeControlAssignment\AVR Assignment\AVR Assignment\MECHENG313A.inc</FILE><LINE>404</LINE></d8u_3>
   <System_Monitor><FILE>C:\Users\Mike\Documents\RealTimeControlAssignment\AVR Assignment\AVR Assignment\MECHENG313A.inc</FILE><LINE>429</LINE></System_Monitor>
   <forever><FILE>C:\Users\Mike\Documents\RealTimeControlAssignment\AVR Assignment\AVR Assignment\AVR Assignment.asm</FILE><LINE>160</LINE></forever>
-  <MonitorTask><FILE>C:\Users\Mike\Documents\RealTimeControlAssignment\AVR Assignment\AVR Assignment\AVR Assignment.asm</FILE><LINE>378</LINE></MonitorTask>
-  <SkipTask><FILE>C:\Users\Mike\Documents\RealTimeControlAssignment\AVR Assignment\AVR Assignment\AVR Assignment.asm</FILE><LINE>207</LINE></SkipTask>
-  <Task_3><FILE>C:\Users\Mike\Documents\RealTimeControlAssignment\AVR Assignment\AVR Assignment\AVR Assignment.asm</FILE><LINE>436</LINE></Task_3>
-  <LeftLEDON><FILE>C:\Users\Mike\Documents\RealTimeControlAssignment\AVR Assignment\AVR Assignment\AVR Assignment.asm</FILE><LINE>267</LINE></LeftLEDON>
-  <RightLED><FILE>C:\Users\Mike\Documents\RealTimeControlAssignment\AVR Assignment\AVR Assignment\AVR Assignment.asm</FILE><LINE>294</LINE></RightLED>
-  <TurnOnLeftLater><FILE>C:\Users\Mike\Documents\RealTimeControlAssignment\AVR Assignment\AVR Assignment\AVR Assignment.asm</FILE><LINE>259</LINE></TurnOnLeftLater>
-  <TurnOffLeftLater><FILE>C:\Users\Mike\Documents\RealTimeControlAssignment\AVR Assignment\AVR Assignment\AVR Assignment.asm</FILE><LINE>284</LINE></TurnOffLeftLater>
-  <RightLEDON><FILE>C:\Users\Mike\Documents\RealTimeControlAssignment\AVR Assignment\AVR Assignment\AVR Assignment.asm</FILE><LINE>328</LINE></RightLEDON>
-  <TurnOnRightLater><FILE>C:\Users\Mike\Documents\RealTimeControlAssignment\AVR Assignment\AVR Assignment\AVR Assignment.asm</FILE><LINE>319</LINE></TurnOnRightLater>
-  <TurnOffRightLater><FILE>C:\Users\Mike\Documents\RealTimeControlAssignment\AVR Assignment\AVR Assignment\AVR Assignment.asm</FILE><LINE>345</LINE></TurnOffRightLater>
-  <SetToOne><FILE>C:\Users\Mike\Documents\RealTimeControlAssignment\AVR Assignment\AVR Assignment\AVR Assignment.asm</FILE><LINE>547</LINE></SetToOne>
-  <door_shut><FILE>C:\Users\Mike\Documents\RealTimeControlAssignment\AVR Assignment\AVR Assignment\AVR Assignment.asm</FILE><LINE>574</LINE></door_shut>
-  <collision><FILE>C:\Users\Mike\Documents\RealTimeControlAssignment\AVR Assignment\AVR Assignment\AVR Assignment.asm</FILE><LINE>616</LINE></collision>
-  <Task_1><FILE>C:\Users\Mike\Documents\RealTimeControlAssignment\AVR Assignment\AVR Assignment\AVR Assignment.asm</FILE><LINE>636</LINE></Task_1>
-  <LeftStatusToggle><FILE>C:\Users\Mike\Documents\RealTimeControlAssignment\AVR Assignment\AVR Assignment\AVR Assignment.asm</FILE><LINE>688</LINE></LeftStatusToggle>
-  <RightStatusToggle><FILE>C:\Users\Mike\Documents\RealTimeControlAssignment\AVR Assignment\AVR Assignment\AVR Assignment.asm</FILE><LINE>706</LINE></RightStatusToggle>
-  <SetLeftTo0><FILE>C:\Users\Mike\Documents\RealTimeControlAssignment\AVR Assignment\AVR Assignment\AVR Assignment.asm</FILE><LINE>699</LINE></SetLeftTo0>
-  <SetRightTo0><FILE>C:\Users\Mike\Documents\RealTimeControlAssignment\AVR Assignment\AVR Assignment\AVR Assignment.asm</FILE><LINE>717</LINE></SetRightTo0>
+  <MonitorTask><FILE>C:\Users\Mike\Documents\RealTimeControlAssignment\AVR Assignment\AVR Assignment\AVR Assignment.asm</FILE><LINE>380</LINE></MonitorTask>
+  <SkipTask><FILE>C:\Users\Mike\Documents\RealTimeControlAssignment\AVR Assignment\AVR Assignment\AVR Assignment.asm</FILE><LINE>209</LINE></SkipTask>
+  <Task_3><FILE>C:\Users\Mike\Documents\RealTimeControlAssignment\AVR Assignment\AVR Assignment\AVR Assignment.asm</FILE><LINE>438</LINE></Task_3>
+  <LeftLEDON><FILE>C:\Users\Mike\Documents\RealTimeControlAssignment\AVR Assignment\AVR Assignment\AVR Assignment.asm</FILE><LINE>269</LINE></LeftLEDON>
+  <RightLED><FILE>C:\Users\Mike\Documents\RealTimeControlAssignment\AVR Assignment\AVR Assignment\AVR Assignment.asm</FILE><LINE>296</LINE></RightLED>
+  <TurnOnLeftLater><FILE>C:\Users\Mike\Documents\RealTimeControlAssignment\AVR Assignment\AVR Assignment\AVR Assignment.asm</FILE><LINE>261</LINE></TurnOnLeftLater>
+  <TurnOffLeftLater><FILE>C:\Users\Mike\Documents\RealTimeControlAssignment\AVR Assignment\AVR Assignment\AVR Assignment.asm</FILE><LINE>286</LINE></TurnOffLeftLater>
+  <RightLEDON><FILE>C:\Users\Mike\Documents\RealTimeControlAssignment\AVR Assignment\AVR Assignment\AVR Assignment.asm</FILE><LINE>330</LINE></RightLEDON>
+  <TurnOnRightLater><FILE>C:\Users\Mike\Documents\RealTimeControlAssignment\AVR Assignment\AVR Assignment\AVR Assignment.asm</FILE><LINE>321</LINE></TurnOnRightLater>
+  <TurnOffRightLater><FILE>C:\Users\Mike\Documents\RealTimeControlAssignment\AVR Assignment\AVR Assignment\AVR Assignment.asm</FILE><LINE>347</LINE></TurnOffRightLater>
+  <SetToOne><FILE>C:\Users\Mike\Documents\RealTimeControlAssignment\AVR Assignment\AVR Assignment\AVR Assignment.asm</FILE><LINE>549</LINE></SetToOne>
+  <door_shut><FILE>C:\Users\Mike\Documents\RealTimeControlAssignment\AVR Assignment\AVR Assignment\AVR Assignment.asm</FILE><LINE>576</LINE></door_shut>
+  <collision><FILE>C:\Users\Mike\Documents\RealTimeControlAssignment\AVR Assignment\AVR Assignment\AVR Assignment.asm</FILE><LINE>618</LINE></collision>
+  <Task_1><FILE>C:\Users\Mike\Documents\RealTimeControlAssignment\AVR Assignment\AVR Assignment\AVR Assignment.asm</FILE><LINE>638</LINE></Task_1>
+  <LeftStatusToggle><FILE>C:\Users\Mike\Documents\RealTimeControlAssignment\AVR Assignment\AVR Assignment\AVR Assignment.asm</FILE><LINE>690</LINE></LeftStatusToggle>
+  <RightStatusToggle><FILE>C:\Users\Mike\Documents\RealTimeControlAssignment\AVR Assignment\AVR Assignment\AVR Assignment.asm</FILE><LINE>708</LINE></RightStatusToggle>
+  <SetLeftTo0><FILE>C:\Users\Mike\Documents\RealTimeControlAssignment\AVR Assignment\AVR Assignment\AVR Assignment.asm</FILE><LINE>701</LINE></SetLeftTo0>
+  <SetRightTo0><FILE>C:\Users\Mike\Documents\RealTimeControlAssignment\AVR Assignment\AVR Assignment\AVR Assignment.asm</FILE><LINE>719</LINE></SetRightTo0>
  </LABELS>
 </ASSEMBLER_INFO>
