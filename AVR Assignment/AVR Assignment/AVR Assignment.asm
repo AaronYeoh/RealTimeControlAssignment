@@ -82,8 +82,8 @@ ld r1,Z ; Load VAR1 into register 1
 		rjmp Main 			;Reset vector
 .org INT0addr				;Setting Origin Address
 		rjmp IntV0 			;INT vector - for toggling the door state
-.org INT1addr				;Setting Origin Address
-		rjmp IntV1			;INT vector - for toggling the light state
+;.org INT1addr				;Setting Origin Address
+;		rjmp IntV1			;INT vector - for toggling the light state
 .org ADCCaddr
 		rjmp ADCF0
 .org OVF0addr				;Setting Origin Address
@@ -157,10 +157,10 @@ Main:
 		;cbi DDRC,PC1		; DELETE ?
 
 		;********* ClockTick 8-bit Timer/Counter 0 *******      
-		ldi r16, (1<<CS01)      ; Start Counter 0      
+		ldi r16, (1<<CS01) | (1<< CS00)      ; Start Counter 0      
       	out TCCR0, r16			; Timer Clock = Sys Clock (1MHz) / 8 (prescaler)
 		
-		ldi	r16, 68				; MaxValue = TOVck (1.5ms or your Cal time) * Pck (1MHz) / 8 (prescaler)
+		ldi	r16, 128				; MaxValue = TOVck (1.5ms or your Cal time) * Pck (1MHz) / 8 (prescaler)
 		out TCNT0, r16			; TCNT0Value = 255 - MaxValue	
 		
 
@@ -217,7 +217,8 @@ ClockTick:
 		sei		;Enable interrupts!!!
 
 		;********* Write ClockTick Code here ********                                                                                                                        
-		
+		ldi	r16, 128				; MaxValue = TOVck (1.5ms or your Cal time) * Pck (1MHz) / 8 (prescaler)
+		out TCNT0, r16			; TCNT0Value = 255 - MaxValue	
 		
 		rcall IntV1
 		; FuelInjectionTimingTask HARD
@@ -279,7 +280,7 @@ ClockTickLeftRight:
 		rjmp LeftLEDON ; Left is actually ON
 
 			;If Left is pressed
-			sbic PIND, PD7 ;Check if LEFT button pressed (PD7 = 0), otherwise we RJMP to the right LED code
+			sbic PIND, PD1 ;Check if LEFT button pressed (PD7 = 0), otherwise we RJMP to the right LED code
 			rjmp RightLED ; Skipped if PD7 = 0
 
 				;If either Broken or TurnOnLeftNext
