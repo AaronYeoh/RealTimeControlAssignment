@@ -90,7 +90,7 @@ Main:
 		sbi DDRB, PB0; left LED
 		sbi DDRB, PB2  ;door LED
 		sbi DDRB, PB4; collision LED
-		sbi DDRB, PB7; right LED
+		sbi DDRB, PB1; right LED
 
 		;Set everything high in PORTD, set DDRD to be input only
 		ldi r16, $FF;
@@ -100,7 +100,7 @@ Main:
 
 		sbi PORTB, PB2 ; Turns off Pin2 of PortB. Note the negative logic. For the collision detection
 		sbi PORTB, PB4	; Turns off Pin4 of PortB. For the door indicator. Door initialised as shut.
-		sbi PORTB, PB7	; Turns off Pin7 of PortB. LeftLED init as off
+		sbi PORTB, PB1	; Turns off Pin7 of PortB. LeftLED init as off
 		sbi PORTB, PB0	; Turns off Pin0 of PortB. RightLED init as off
 		
 		ldi r16,(1<<INT0) | (1<<INT1); int mask 0 set +  (1<<INT1) 
@@ -179,10 +179,10 @@ ClockTick:
 		;Start_Task 	ClockTick_Task	;Turn output indicator pin On
 		sei		;Enable interrupts!!!
 
-		;********* Write ClockTick Code here ********
+		;********* Write ClockTick Code here ********                                                                                                                        
 		
 		
-		;rcall IntV1
+		rcall IntV1
 		; FuelInjectionTimingTask HARD
 		; Every nth tick, run the timing subroutine
 
@@ -237,7 +237,7 @@ ClockTickLeftRight:
 
 		
 		;When LeftLED is OFF 
-		sbis PORTB, PB7 ;Skip if Left is off (PB0 == 1)
+		sbis PORTB, PB1 ;Skip if Left is off (PB0 == 1)
 		rjmp LeftLEDON ; Left is actually ON
 
 			;If Left is pressed
@@ -251,7 +251,7 @@ ClockTickLeftRight:
 				sbrs r16, 0  ;If we want to turn on the 
 				rjmp TurnOnLeftLater 
 					;Turn Left ON
-					cbi PORTB, PB7 ; Turn the LED ON by setting PB7 = 0
+					cbi PORTB, PB1 ; Turn the LED ON by setting PB1 = 0
 					ldi r16, 0
 					sts TurnOnLeftNext, r16
 
@@ -276,7 +276,7 @@ ClockTickLeftRight:
 			sbrs r16, 0  ;If we want to turn on the 
 			rjmp TurnOffLeftLater 
 				;Turn Left OFF
-				sbi PORTB, PB7 ; Turn the LED OFF by setting PB7 = 1
+				sbi PORTB, PB1 ; Turn the LED OFF by setting PB7 = 1
 				ldi r16, 0
 				sts TurnOffLeftNext, r16	;TurnOffLeftNext = false
 
