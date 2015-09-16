@@ -8,6 +8,42 @@
  *  Created: 4/08/2015 2:43:56 p.m.
  *   Authors: xwan572 & ayeo722
  */ 
+ ;************push and pop potential register used****************
+.MACRO PopAll
+	pop r16
+	out SREG, r16 
+	pop r0
+	pop r1
+	pop r16
+	pop r17
+	pop r18
+	pop r19
+	pop r20
+	pop r21
+	pop r22
+	pop r23
+	pop r24
+
+.ENDMACRO
+
+
+
+.MACRO PushAll
+	push r24
+	push r23
+	push r22
+	push r21
+	push r20
+	push r19
+	push r18
+	push r17
+	push r16
+	push r1
+	push r0
+	in r16, SREG
+	push r16
+.ENDMACRO
+;************end push and pop****************
 
 
 .nolist						;Turn listfile generation Off
@@ -176,6 +212,7 @@ forever:
 
 ;***************** Clock Tick Interrupt Service Routine *****************
 ClockTick:
+		PushAll
 		;Start_Task 	ClockTick_Task	;Turn output indicator pin On
 		sei		;Enable interrupts!!!
 
@@ -214,6 +251,7 @@ ClockTick:
 		rcall MonitorTask
 
 		;End_Task	ClockTick_Task	;Turn output indicator pin Off
+		PopAll
 		RETI						;Return from Interurpt
 
 
@@ -221,7 +259,7 @@ ClockTick:
 
 ;***************** Clock Tick Interrupt Service Routine *****************
 ClockTickLeftRight:
-		
+		PushAll
 		sei		;Enable interrupts!!!
 		
 				;to get 0.25ms per interrupt, TCNT1 = 34286 = $85EE
@@ -302,7 +340,7 @@ ClockTickLeftRight:
 
 			;If Right is pressed
 			sbic PIND, PD0 ;Check if Right button pressed (PD0 = 0), otherwise return
-			reti ; Skipped if PD0 = 0
+			rjmp BeforeRet ; Skipped if PD0 = 0
 
 				;If either Broken or TurnOnRightNext
 				lds r16, RightBroken
@@ -315,7 +353,7 @@ ClockTickLeftRight:
 					ldi r16, 0
 					sts TurnOnRightNext, r16
 
-					reti
+					rjmp BeforeRet
 
 				;Not Broken or TOLN
 				TurnOnRightLater:
@@ -324,7 +362,7 @@ ClockTickLeftRight:
 					sts TurnOnRightNext, r16
 					;Do nothing
 					
-					reti
+					rjmp BeforeRet
 			
 
 		RightLEDON:
@@ -341,7 +379,7 @@ ClockTickLeftRight:
 				ldi r16, 0
 				sts TurnOffRightNext, r16	;TurnOffRightNext = false
 
-				reti
+				rjmp BeforeRet
 			
 			;Not Broken or TOLN
 			TurnOffRightLater:
@@ -352,8 +390,8 @@ ClockTickLeftRight:
 
 
 
-				
-		
+		BeforeRet:		
+		PopAll
 		RETI						;Return from Interurpt
 
 
@@ -430,14 +468,14 @@ MonitorTask:
 		mov r23, r22
 		
 		pop r22
-
+		
 		RET
 
 
 ;***************** Start of Task3 *****************
 Task_3:	;Start_Task 	3	;Turn output indicator pin On
+		PushAll
 		
-		 push r16
 
 		ldi ZH, high(RPMLoad_Lookup<<1)
 		ldi ZL, low(RPMLoad_Lookup<<1)
@@ -538,11 +576,10 @@ Task_3:	;Start_Task 	3	;Turn output indicator pin On
 
 		 sts PulseWidth, r22
 
-		 pop r16
-		 
 		 ;error check if PulseWidth is 0, if true then branch to set it to 1, otherwise do nothing
 		 cpi r22, 0
 		 breq SetToOne
+		 PopAll
 		 ret
 
 
@@ -551,6 +588,7 @@ Task_3:	;Start_Task 	3	;Turn output indicator pin On
 		 sts PulseWidth, r22
 		 
 		; End_Task	3	;Turn output indicator pin Off
+		PopAll
 		RET
 ;***************** End Task3 **********************
 
@@ -561,7 +599,7 @@ Task_3:	;Start_Task 	3	;Turn output indicator pin On
 ; DOOR OPEN LIGHT LED PB4
 
 IntV0:
-		push r16
+		PushAll
 		sei ; Enable interrupts.
 
 		;Check the PB2 bit. If it is set, the door WAS shut (LED off) and it's now open. We want to turn ON the LED. 
@@ -571,13 +609,14 @@ IntV0:
 		;if door was open (PB4 == 0), it is shut now
 		
 		sbi PORTB, PB2  ;SET the door LED - LED is OFF
+		PopAll
 		RETI			;Return from Interurpt
 
 		door_shut:
 		;if door was shut, we set it as open
 		cbi PORTB, PB2	;Clear the door LED - LED is ON 
 
-		pop r16
+		PopAll
 		RETI			;Return from Interurpt
 ;***************** End External Interrupt **********************
 
@@ -586,7 +625,7 @@ IntV0:
 
 ;***************** Collision Detection*****************
 ADCF0:	;Start_Task 	2 	;Turn output indicator pin On
-		
+		PushAll
 		;********* Write Task  here ********
 		in r22, ADCL
 		in r23, ADCH
@@ -611,13 +650,13 @@ ADCF0:	;Start_Task 	2 	;Turn output indicator pin On
 		cpi r20, 4
 		brsh collision
 		sbi PORTB, PB4 ;Collision has NOT occurred. Turn off LED at PB4 by setting the bit
-				
+		PopAll		
 		RETI
 
 
 		collision:
 		cbi PORTB, PB4 ;Collision has occurred. Turn on LED at PB4 by clearing the bit
-				
+		PopAll		
 		RETI
 		
 		;end of collision
@@ -626,50 +665,18 @@ ADCF0:	;Start_Task 	2 	;Turn output indicator pin On
 		;************************************
 		
 		;End_Task	2	;Turn output indicator pin Off
-		RETI
 ;***************** End Task1 **********************
 
 
 
 
-
-
-;***************** Start of Task1 *****************
-Task_1:	;Start_Task 	1 	;Turn output indicator pin On
-		push r16
-		;********* Write Task 1 here ********
-		;ldi r22, low(Mass); load low bit 
-		;ldi r23, high(Mass); low high bit
-		;ldi r21, Velocity; load velocity
-		mul r21, r21; mul has to
-		mov r21, r1
-		mov r20, r0
-		rcall mul16x16_32; r19:r18:r17:r16 = r23:r22 * r21:r20
-		mov r24, r18
-		mov r23, r17
-		mov r22, r16
-		ldi r19, 2;
-		ldi r21, 0
-		ldi r20, 0
-		clr r18
-		clr r17
-		clr r16
-		rcall div24x24_24; r24:r23:r22 = r24:r23:r22 / r21:r20:r19
-		;ldi r19, Distance
-		;rcall div24x24_24;
-
-
-		;************************************
-		pop r16
-		;End_Task	1	;Turn output indicator pin Off
-		RETI
-;***************** End Task1 **********************
 
 
 ;Test ISR
 ;To use, connect P
 IntV1:
-		push r16
+		PushAll
+		
 
 		ldi r16, 1
 		
@@ -679,7 +686,7 @@ IntV1:
 		sbis PIND, PD4; Right Broken toggle
 		rcall RightStatusToggle ;change the state of the right switch
 
-		pop r16
+		PopAll
 		reti
 
 
