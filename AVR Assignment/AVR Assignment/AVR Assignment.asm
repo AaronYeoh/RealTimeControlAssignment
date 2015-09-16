@@ -33,6 +33,9 @@ CarDoorInterrupted: .byte 1
 IndicatorRunning: .byte 1
 
 PulseCounterSchedule: .byte 1 ; reserve 1 byte for counter of Task_3
+
+LeftToggled: .byte 1
+RightToggled: .byte 1
 /*  ************ Instructions on using variables in program memory
 .DSEG 
 var1:  .BYTE 1 ; reserve 1 byte to var1 
@@ -93,7 +96,7 @@ Main:
 
 		;Set the DDR for PORTB, allowing for us to write out
 
-		ldi r16, (1<<PB0) | (1 << PB2) | (1 << PB4) | (1 << PB7)
+		ldi r16, (1<<PB0) | (1 << PB2) | (1 << PB4) | (1 << PB1)
 		out DDRB, r16
 		out PORTB, r16
 		;sbi DDRB, PB0; left LED
@@ -166,6 +169,8 @@ Main:
 		ldi r16, 0
 		sts CarDoorInterrupted, r16
 		sts FuelInjRunning, r16
+		sts LeftToggled, r16
+		sts RightToggled, r16
 
 		sei ; enable interrupts
 
@@ -173,6 +178,7 @@ Main:
 forever:
 		;Start_Task 1
 		;rcall MonitorTask
+		nop
 		;End_Task 1
 		rjmp forever 
 ;*****************End of program *****************
@@ -282,8 +288,8 @@ ClockTickLeftRight:
 		rjmp LeftLEDON ; Left is actually ON
 
 			;If Left is pressed
-			sbic PIND, PD7 ;Check if LEFT button pressed (PD7 = 0), otherwise we RJMP to the right LED code
-			rjmp RightLED ; Skipped if PD7 = 0
+			sbic PIND, PD1 ;Check if LEFT button pressed (PD1 = 0), otherwise we RJMP to the right LED code
+			rjmp RightLED ; Skipped if PD1 = 0
 
 				;If either Broken or TurnOnLeftNext
 				lds r16, LeftBroken
@@ -744,24 +750,62 @@ ADCF0:	;Start_Task 	2 	;Turn output indicator pin On
 IntV1:
 		push r16
 
-		ldi r16, 1
 		
+		
+		
+
+		lds r16, LeftToggled; check if left toggle was pressed already
+		cpi r16, 1
+		brne AllowToggleLeft
+		; left Toggle not allowed
 		sbis PIND, PD5 ; Left Broken toggle
+			rjmp CheckRightToggle
+		ldi r16, 0
+		sts LeftToggled, r16
+		rjmp CheckRightToggle
+
+		AllowToggleLeft:
+		sbic PIND, PD5 ; Left Broken toggle
+			rjmp CheckRightToggle
+
 		rcall LeftStatusToggle	;change the state of the left switch
+		ldi r16, 1
+		sts LeftToggled, r16
+		
 
-		sbis PIND, PD4; Right Broken toggle
-		rcall RightStatusToggle ;change the state of the right switch
+		CheckRightToggle:
+		
+		lds r16, RightToggled ; check if right toggle was pressed already
+		cpi r16, 1
+		brne AllowToggleRight
+		;Right Toggle not allowed
+		sbis PIND, PD4
+			rjmp ReturnFromIntV1
 
+		ldi r16, 0
+		sts RightToggled, r16
 		pop r16
 		reti
 
+		AllowToggleRight:
+		sbic PIND, PD4; Right Broken toggle
+			rjmp ReturnFromIntV1
 
+		rcall RightStatusToggle ;change the state of the right switch
+		ldi r16, 1
+		sts RightToggled, r16
+		
+		
+
+		ReturnFromIntV1:
+			pop r16
+			reti
 
 ;************ Toggle Normal / Broken state ************* 
 
 ;Left toggle
 LeftStatusToggle:
-		
+
 		lds r16, LeftBroken
 
 		cpi r16, 1
