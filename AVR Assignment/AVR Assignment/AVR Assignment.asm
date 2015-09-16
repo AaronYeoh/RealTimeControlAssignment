@@ -51,8 +51,8 @@ ld r1,Z ; Load VAR1 into register 1
 		rjmp Main 			;Reset vector
 .org INT0addr				;Setting Origin Address
 		rjmp IntV0 			;INT vector - for toggling the door state
-.org INT1addr				;Setting Origin Address
-		rjmp IntV1			;INT vector - for toggling the light state
+;.org INT1addr				;Setting Origin Address
+;		rjmp IntV1			;INT vector - for toggling the light state
 .org ADCCaddr
 		rjmp ADCF0
 .org OVF0addr				;Setting Origin Address
@@ -92,21 +92,25 @@ Main:
 		;sbi PORTD,PD2		; Test code. Turns on an LED
 
 		;Set the DDR for PORTB, allowing for us to write out
-		sbi DDRB, PB0; left LED
-		sbi DDRB, PB2  ;door LED
-		sbi DDRB, PB4; collision LED
-		sbi DDRB, PB1; right LED
+
+		ldi r16, (1<<PB0) | (1 << PB2) | (1 << PB4) | (1 << PB7)
+		out DDRB, r16
+		out PORTB, r16
+		;sbi DDRB, PB0; left LED
+		;sbi DDRB, PB2  ;door LED
+		;sbi DDRB, PB4; collision LED
+		;sbi DDRB, PB1; right LED
 
 		;Set everything high in PORTD, set DDRD to be input only
 		ldi r16, $FF;
 		out PORTD, r16
 		clr r16
 		out DDRD, r16
-
-		sbi PORTB, PB2 ; Turns off Pin2 of PortB. Note the negative logic. For the collision detection
-		sbi PORTB, PB4	; Turns off Pin4 of PortB. For the door indicator. Door initialised as shut.
-		sbi PORTB, PB1	; Turns off Pin7 of PortB. LeftLED init as off
-		sbi PORTB, PB0	; Turns off Pin0 of PortB. RightLED init as off
+		
+		;sbi PORTB, PB2 ; Turns off Pin2 of PortB. Note the negative logic. For the collision detection
+		;sbi PORTB, PB4	; Turns off Pin4 of PortB. For the door indicator. Door initialised as shut.
+		;sbi PORTB, PB1	; Turns off Pin7 of PortB. LeftLED init as off
+		;sbi PORTB, PB0	; Turns off Pin0 of PortB. RightLED init as off
 		
 		ldi r16,(1<<INT0) | (1<<INT1); int mask 0 set +  (1<<INT1) 
 		out GICR,r16
