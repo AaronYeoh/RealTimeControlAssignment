@@ -1,9 +1,9 @@
 
-AVRASM ver. 2.1.57  E:\RealTimeControlAssignment\AVR Assignment\AVR Assignment\AVR Assignment.asm Wed Sep 16 19:58:59 2015
+AVRASM ver. 2.1.57  E:\RealTimeControlAssignment\AVR Assignment\AVR Assignment\AVR Assignment.asm Wed Sep 16 20:29:08 2015
 
 [builtin](2): Including file 'C:\Program Files (x86)\Atmel\Atmel Toolchain\AVR Assembler\Native\2.1.1175\avrassembler\Include\m8def.inc'
-E:\RealTimeControlAssignment\AVR Assignment\AVR Assignment\AVR Assignment.asm(44): Including file 'C:\Program Files (x86)\Atmel\Atmel Toolchain\AVR Assembler\Native\2.1.1175\avrassembler\Include\m8def.inc'
-E:\RealTimeControlAssignment\AVR Assignment\AVR Assignment\AVR Assignment.asm(109): Including file 'E:\RealTimeControlAssignment\AVR Assignment\AVR Assignment\MECHENG313A.inc'
+E:\RealTimeControlAssignment\AVR Assignment\AVR Assignment\AVR Assignment.asm(51): Including file 'C:\Program Files (x86)\Atmel\Atmel Toolchain\AVR Assembler\Native\2.1.1175\avrassembler\Include\m8def.inc'
+E:\RealTimeControlAssignment\AVR Assignment\AVR Assignment\AVR Assignment.asm(116): Including file 'E:\RealTimeControlAssignment\AVR Assignment\AVR Assignment\MECHENG313A.inc'
                  
                  /*
                  
@@ -756,7 +756,11 @@ E:\RealTimeControlAssignment\AVR Assignment\AVR Assignment\AVR Assignment.asm(10
                   */ 
                  
                   ;************push and pop potential register used****************
-                 /*.MACRO PopAll
+                 .MACRO PopAll
+                 	pop r16 ; Hack
+                 	out SREG, r16 
+                 	pop r0
+                 	pop r1
                  	pop r16
                  	pop r17
                  	pop r18
@@ -781,8 +785,11 @@ E:\RealTimeControlAssignment\AVR Assignment\AVR Assignment\AVR Assignment.asm(10
                  	push r18
                  	push r17
                  	push r16
-                 
-                 .ENDMACRO*/
+                 	push r1
+                 	push r0
+                 	in r16, SREG
+                 	push r16
+                 .ENDMACRO
                  ;************end push and pop****************
                  
                  
@@ -827,11 +834,11 @@ E:\RealTimeControlAssignment\AVR Assignment\AVR Assignment\AVR Assignment.asm(10
                  .org $00000					;Setting Origin Address
 000000 c2b0      		rjmp Main 			;Reset vector
                  .org INT0addr				;Setting Origin Address
-000001 c3ca      		rjmp IntV0 			;INT vector - for toggling the door state
+000001 c42b      		rjmp IntV0 			;INT vector - for toggling the door state
                  ;.org INT1addr				;Setting Origin Address
                  ;		rjmp IntV1			;INT vector - for toggling the light state
                  .org ADCCaddr
-00000e c3d7      		rjmp ADCF0
+00000e c475      		rjmp ADCF0
                  ;.org OVF0addr				;Setting Origin Address
                  ;		rjmp ClockTick 		;ClockTick vector
                  ;.org OVF1addr				;Setting Origin Address
@@ -1406,7 +1413,7 @@ E:\RealTimeControlAssignment\AVR Assignment\AVR Assignment\AVR Assignment.asm(10
                  forever:
                  		;Start_Task 1
                  		;rcall MonitorTask
-0002df d097      		rcall Task_3
+0002df d0df      		rcall Task_3
                  		;End_Task 1
 0002e0 cffe      		rjmp forever 
                  ;*****************End of program *****************
@@ -1424,8 +1431,20 @@ E:\RealTimeControlAssignment\AVR Assignment\AVR Assignment\AVR Assignment.asm(10
                  ;***************** Clock Tick Interrupt Service Routine *****************
                  ClockTick:
                  		;Start_Task 	ClockTick_Task	;Turn output indicator pin On
-0002e1 d15e      		rcall PushAll
-0002e2 9478      		sei		;Enable interrupts!!!
+0002e1 938f
+0002e2 937f
+0002e3 936f
+0002e4 935f
+0002e5 934f
+0002e6 933f
+0002e7 932f
+0002e8 931f
+0002e9 930f
+0002ea 921f
+0002eb 920f
+0002ec b70f
+0002ed 930f      		PushAll
+0002ee 9478      		sei		;Enable interrupts!!!
                  
                  		;********* Write ClockTick Code here ********
                  		
@@ -1442,45 +1461,69 @@ E:\RealTimeControlAssignment\AVR Assignment\AVR Assignment\AVR Assignment.asm(10
                  		; convert from Fluid Ounces to Litres 
                  
                  
-0002e3 9100 0072 		lds r16, PulseCounterSchedule
-0002e5 9110 0067 		lds r17, PulseWidth
+0002ef 9100 0072 		lds r16, PulseCounterSchedule
+0002f1 9110 0067 		lds r17, PulseWidth
                  		
-0002e7 1701      		cp r16, r17
-0002e8 f419      		brne SkipTask
-0002e9 d08d      		rcall Task_3
+0002f3 1701      		cp r16, r17
+0002f4 f419      		brne SkipTask
+0002f5 d0c9      		rcall Task_3
                  		
-0002ea 2700      		clr r16
-0002eb 2711      		clr r17
+0002f6 2700      		clr r16
+0002f7 2711      		clr r17
                  		
                  
                  
                  		SkipTask:
-0002ec 9503      		inc r16
-0002ed 9300 0072 		sts PulseCounterSchedule, r16
+0002f8 9503      		inc r16
+0002f9 9300 0072 		sts PulseCounterSchedule, r16
                  
                  
-0002ef d069      		rcall MonitorTask
+0002fb d08d      		rcall MonitorTask
                  
                  		;End_Task	ClockTick_Task	;Turn output indicator pin Off
-0002f0 d145      		rcall PopAll
-0002f1 9518      		RETI						;Return from Interurpt
+0002fc 910f
+0002fd bf0f
+0002fe 900f
+0002ff 901f
+000300 910f
+000301 911f
+000302 912f
+000303 913f
+000304 914f
+000305 915f
+000306 916f
+000307 917f
+000308 918f      		PopAll
+000309 9518      		RETI						;Return from Interurpt
                  
                  
                  ;***************** End External Interrupt **********************
                  
                  ;***************** Clock Tick Interrupt Service Routine *****************
                  ClockTickLeftRight:
-0002f2 d14d      		rcall PushAll
+00030a 938f
+00030b 937f
+00030c 936f
+00030d 935f
+00030e 934f
+00030f 933f
+000310 932f
+000311 931f
+000312 930f
+000313 921f
+000314 920f
+000315 b70f
+000316 930f      		PushAll
                  		;If the fuel injection code was running:
-0002f3 9100 006e 		lds r16, FuelInjRunning
-0002f5 e011      		ldi r17, 1
-0002f6 1301      		cpse r16, r17 ;Compare skip if equal
-0002f7 c005      			rjmp RunLeftRight
-0002f8 e001      		ldi r16, 1
-0002f9 9300 006f 		sts LeftRightInterrupted, r16
+000317 9100 006e 		lds r16, FuelInjRunning
+000319 e011      		ldi r17, 1
+00031a 1301      		cpse r16, r17 ;Compare skip if equal
+00031b c005      			rjmp RunLeftRight
+00031c e001      		ldi r16, 1
+00031d 9300 006f 		sts LeftRightInterrupted, r16
                  
-0002fb 910f      		pop r16
-0002fc 9518      		reti
+00031f 910f      		pop r16
+000320 9518      		reti
                  
                  		;Allow collision to interrupt, disallow door code to interrupt
                  		
@@ -1488,13 +1531,13 @@ E:\RealTimeControlAssignment\AVR Assignment\AVR Assignment\AVR Assignment.asm(10
                  		RunLeftRight:
                  		
                  		;Not interrupted
-0002fd 9478      		sei		;Enable interrupts!!!
-0002fe d0fb      		rcall IntV1 ; Check if Mike wants to toggle the stage of the switch
-0002ff e000      		ldi r16, 0
-000300 9300 006f 		sts LeftRightInterrupted, r16
+000321 9478      		sei		;Enable interrupts!!!
+000322 d199      		rcall IntV1 ; Check if Mike wants to toggle the stage of the switch
+000323 e000      		ldi r16, 0
+000324 9300 006f 		sts LeftRightInterrupted, r16
                  		
-000302 e001      		ldi r16, 1
-000303 9300 0071 		sts IndicatorRunning, r16
+000326 e001      		ldi r16, 1
+000327 9300 0071 		sts IndicatorRunning, r16
                  		
                  		
                  		
@@ -1502,11 +1545,11 @@ E:\RealTimeControlAssignment\AVR Assignment\AVR Assignment\AVR Assignment.asm(10
                  
                  		
                  				;to get 0.25ms per interrupt, TCNT1 = 34286 = $85EE
-000305 ee0e      		ldi	r16, $EE			; MaxValue = TOVck (1.5ms or your Cal time) * Pck (1MHz) / 8 (prescaler)
-000306 bd0c      		out TCNT1L, r16			; TCNT0Value = 2^16 - MaxValue	
+000329 ee0e      		ldi	r16, $EE			; MaxValue = TOVck (1.5ms or your Cal time) * Pck (1MHz) / 8 (prescaler)
+00032a bd0c      		out TCNT1L, r16			; TCNT0Value = 2^16 - MaxValue	
                  
-000307 e805      		ldi	r16, $85			; MaxValue = TOVck (1.5ms or your Cal time) * Pck (1MHz) / 8 (prescaler)
-000308 bd0d      		out TCNT1H, r16			; TCNT0Value = 255 - MaxValue	
+00032b e805      		ldi	r16, $85			; MaxValue = TOVck (1.5ms or your Cal time) * Pck (1MHz) / 8 (prescaler)
+00032c bd0d      		out TCNT1H, r16			; TCNT0Value = 255 - MaxValue	
                  
                  
                  		;********* Write ClockTick Code here ********
@@ -1514,56 +1557,56 @@ E:\RealTimeControlAssignment\AVR Assignment\AVR Assignment\AVR Assignment.asm(10
                  
                  		
                  		;When LeftLED is OFF 
-000309 9bc1      		sbis PORTB, PB1 ;Skip if Left is off (PB1 == 1)
-00030a c012      		rjmp LeftLEDON ; Left is actually ON
+00032d 9bc1      		sbis PORTB, PB1 ;Skip if Left is off (PB1 == 1)
+00032e c012      		rjmp LeftLEDON ; Left is actually ON
                  
                  			;If Left is pressed
-00030b 9981      			sbic PIND, PD1 ;Check if LEFT button pressed (PD1 = 0), otherwise we RJMP to the right LED code
-00030c c01f      			rjmp RightLED ; Skipped if PD1 = 0
+00032f 9981      			sbic PIND, PD1 ;Check if LEFT button pressed (PD1 = 0), otherwise we RJMP to the right LED code
+000330 c01f      			rjmp RightLED ; Skipped if PD1 = 0
                  
                  				;If either Broken or TurnOnLeftNext
-00030d 9100 0068 				lds r16, LeftBroken
-00030f 9110 0069 				lds r17, TurnOnLeftNext
-000311 2b01      				or r16, r17 ; if LeftBroken OR TurnOnLeftNext, turn on LEFT. R16 = 1
-000312 ff00      				sbrs r16, 0  ;If we want to turn on the 
-000313 c005      				rjmp TurnOnLeftLater 
+000331 9100 0068 				lds r16, LeftBroken
+000333 9110 0069 				lds r17, TurnOnLeftNext
+000335 2b01      				or r16, r17 ; if LeftBroken OR TurnOnLeftNext, turn on LEFT. R16 = 1
+000336 ff00      				sbrs r16, 0  ;If we want to turn on the 
+000337 c005      				rjmp TurnOnLeftLater 
                  					;Turn Left ON
-000314 98c1      					cbi PORTB, PB1 ; Turn the LED ON by setting PB1 = 0
-000315 e000      					ldi r16, 0
-000316 9300 0069 					sts TurnOnLeftNext, r16
+000338 98c1      					cbi PORTB, PB1 ; Turn the LED ON by setting PB1 = 0
+000339 e000      					ldi r16, 0
+00033a 9300 0069 					sts TurnOnLeftNext, r16
                  
-000318 c013      					rjmp RightLED
+00033c c013      					rjmp RightLED
                  
                  				;Not Broken or TOLN
                  				TurnOnLeftLater:
                  					;TurnOnLeftNext = true
-000319 e001      					ldi r16, 1
-00031a 9300 0069 					sts TurnOnLeftNext, r16
+00033d e001      					ldi r16, 1
+00033e 9300 0069 					sts TurnOnLeftNext, r16
                  					;Do nothing
                  				
-00031c c00f      			rjmp RightLED
+000340 c00f      			rjmp RightLED
                  
                  		LeftLEDON:
                  		;If LeftLED is ON
                  
                  			;If either Broken or TurnOffLeftNext
-00031d 9100 0068 			lds r16, LeftBroken
-00031f 9110 006a 			lds r17, TurnOffLeftNext
-000321 2b01      			or r16, r17 ; if LeftBroken OR TurnOnLeftNext, turn on LEFT. R16 = 1
-000322 ff00      			sbrs r16, 0  ;If we want to turn on the 
-000323 c005      			rjmp TurnOffLeftLater 
+000341 9100 0068 			lds r16, LeftBroken
+000343 9110 006a 			lds r17, TurnOffLeftNext
+000345 2b01      			or r16, r17 ; if LeftBroken OR TurnOnLeftNext, turn on LEFT. R16 = 1
+000346 ff00      			sbrs r16, 0  ;If we want to turn on the 
+000347 c005      			rjmp TurnOffLeftLater 
                  				;Turn Left OFF
-000324 9ac1      				sbi PORTB, PB1 ; Turn the LED OFF by setting PB1 = 1
-000325 e000      				ldi r16, 0
-000326 9300 006a 				sts TurnOffLeftNext, r16	;TurnOffLeftNext = false
+000348 9ac1      				sbi PORTB, PB1 ; Turn the LED OFF by setting PB1 = 1
+000349 e000      				ldi r16, 0
+00034a 9300 006a 				sts TurnOffLeftNext, r16	;TurnOffLeftNext = false
                  
-000328 c003      				rjmp RightLED
+00034c c003      				rjmp RightLED
                  			
                  			;Not Broken or TOLN
                  			TurnOffLeftLater:
                  				;TurnOffLeftNext = true
-000329 e001      				ldi r16, 1
-00032a 9300 006a 				sts TurnOffLeftNext, r16
+00034d e001      				ldi r16, 1
+00034e 9300 006a 				sts TurnOffLeftNext, r16
                  				;Do nothing
                  				
                  			
@@ -1574,70 +1617,82 @@ E:\RealTimeControlAssignment\AVR Assignment\AVR Assignment\AVR Assignment.asm(10
                  
                  		
                  		;When RightLED is OFF 
-00032c 9bc0      		sbis PORTB, PB0 ;Skip if Right is off (PB0 == 1)
-00032d c012      		rjmp RightLEDON ; Left is actually ON
+000350 9bc0      		sbis PORTB, PB0 ;Skip if Right is off (PB0 == 1)
+000351 c012      		rjmp RightLEDON ; Left is actually ON
                  
                  			;If Right is pressed
-00032e 9980      			sbic PIND, PD0 ;Check if Right button pressed (PD0 = 0), otherwise return
-00032f c01f      			rjmp CarDoorCallback; Skipped if PD0 = 0
+000352 9980      			sbic PIND, PD0 ;Check if Right button pressed (PD0 = 0), otherwise return
+000353 c01f      			rjmp CarDoorCallback; Skipped if PD0 = 0
                  
                  				;If either Broken or TurnOnRightNext
-000330 9100 006b 				lds r16, RightBroken
-000332 9110 006c 				lds r17, TurnOnRightNext
-000334 2b01      				or r16, r17 ; if RightBroken OR TurnOnRightNext, turn on RIGHT. R16 = 1
-000335 ff00      				sbrs r16, 0  ;If we want to turn on the 
-000336 c005      				rjmp TurnOnRightLater 
+000354 9100 006b 				lds r16, RightBroken
+000356 9110 006c 				lds r17, TurnOnRightNext
+000358 2b01      				or r16, r17 ; if RightBroken OR TurnOnRightNext, turn on RIGHT. R16 = 1
+000359 ff00      				sbrs r16, 0  ;If we want to turn on the 
+00035a c005      				rjmp TurnOnRightLater 
                  					;Turn RIGHT ON
-000337 98c0      					cbi PORTB, PB0 ; Turn the LED ON by setting PB0 = 0
-000338 e000      					ldi r16, 0
-000339 9300 006c 					sts TurnOnRightNext, r16
+00035b 98c0      					cbi PORTB, PB0 ; Turn the LED ON by setting PB0 = 0
+00035c e000      					ldi r16, 0
+00035d 9300 006c 					sts TurnOnRightNext, r16
                  
-00033b c013      					rjmp CarDoorCallback 
+00035f c013      					rjmp CarDoorCallback 
                  
                  				;Not Broken or TOLN
                  				TurnOnRightLater:
                  					;TurnOnRightNext = true
-00033c e001      					ldi r16, 1
-00033d 9300 006c 					sts TurnOnRightNext, r16
+000360 e001      					ldi r16, 1
+000361 9300 006c 					sts TurnOnRightNext, r16
                  					;Do nothing
                  					
-00033f c00f      					rjmp CarDoorCallback
+000363 c00f      					rjmp CarDoorCallback
                  			
                  
                  		RightLEDON:
                  		;If RightLED is ON
                  
                  			;If either Broken or TurnOffRightNext
-000340 9100 006b 			lds r16, RightBroken
-000342 9110 006d 			lds r17, TurnOffRightNext
-000344 2b01      			or r16, r17 ; if RightBroken OR TurnOnRightNext, turn on Right. R16 = 1
-000345 ff00      			sbrs r16, 0  ;If we want to turn on the 
-000346 c005      			rjmp TurnOffRightLater 
+000364 9100 006b 			lds r16, RightBroken
+000366 9110 006d 			lds r17, TurnOffRightNext
+000368 2b01      			or r16, r17 ; if RightBroken OR TurnOnRightNext, turn on Right. R16 = 1
+000369 ff00      			sbrs r16, 0  ;If we want to turn on the 
+00036a c005      			rjmp TurnOffRightLater 
                  				;Turn Right OFF
-000347 9ac0      				sbi PORTB, PB0 ; Turn the LED OFF by setting PB0 = 1
-000348 e000      				ldi r16, 0
-000349 9300 006d 				sts TurnOffRightNext, r16	;TurnOffRightNext = false
+00036b 9ac0      				sbi PORTB, PB0 ; Turn the LED OFF by setting PB0 = 1
+00036c e000      				ldi r16, 0
+00036d 9300 006d 				sts TurnOffRightNext, r16	;TurnOffRightNext = false
                  
-00034b c003      				rjmp CarDoorCallback
+00036f c003      				rjmp CarDoorCallback
                  			
                  			;Not Broken or TOLN
                  			TurnOffRightLater:
                  				;TurnOffRightNext = true
-00034c e001      				ldi r16, 1
-00034d 9300 006d 				sts TurnOffRightNext, r16
+000370 e001      				ldi r16, 1
+000371 9300 006d 				sts TurnOffRightNext, r16
                  				;Do nothing
                  
                  
                  		CarDoorCallback:
                  		 ; Car door callback
-00034f 9100 0070 		 lds r16, CarDoorInterrupted
-000351 fd00      		 sbrc r16, 0
-000352 d079      		 rcall IntV0
+000373 9100 0070 		 lds r16, CarDoorInterrupted
+000375 fd00      		 sbrc r16, 0
+000376 d0b6      		 rcall IntV0
                  		 
-000353 9100 0000 		 lds r16, 0
-000355 9300 0070 		 sts CarDoorInterrupted, r16 ; clear the flag
-000357 d0de      		 rcall PopAll
-000358 9518      		 reti
+000377 9100 0000 		 lds r16, 0
+000379 9300 0070 		 sts CarDoorInterrupted, r16 ; clear the flag
+00037b 910f
+00037c bf0f
+00037d 900f
+00037e 901f
+00037f 910f
+000380 911f
+000381 912f
+000382 913f
+000383 914f
+000384 915f
+000385 916f
+000386 917f
+000387 918f      		 PopAll
+000388 9518      		 reti
                  
                  
                  ; ASYNC CODE
@@ -1661,30 +1716,42 @@ E:\RealTimeControlAssignment\AVR Assignment\AVR Assignment\AVR Assignment.asm(10
                  
                  
                  MonitorTask:
-000359 d0e6      		rcall PushAll
-00035a b164      		in r22, ADCL
+000389 938f
+00038a 937f
+00038b 936f
+00038c 935f
+00038d 934f
+00038e 933f
+00038f 932f
+000390 931f
+000391 930f
+000392 921f
+000393 920f
+000394 b70f
+000395 930f      		PushAll
+000396 b164      		in r22, ADCL
                  		
                  		;Treat r18 (ADCL) as Fahrenheit and convert to celcius
                  
-00035b e210      		ldi r17, 32
+000397 e210      		ldi r17, 32
                  
-00035c 1b61      		sub r22, r17
+000398 1b61      		sub r22, r17
                  
-00035d e039      		ldi r19, 9
+000399 e039      		ldi r19, 9
                  
-00035e 2788      		clr r24
-00035f 2777      		clr r23
-000360 2755      		clr r21
-000361 2744      		clr r20
+00039a 2788      		clr r24
+00039b 2777      		clr r23
+00039c 2755      		clr r21
+00039d 2744      		clr r20
                  		;We divide by 9
-000362 df24      		rcall div24x24_24 ;r24:r23:r22 = r24:r23:r22 / r21:r20:r19
+00039e dee8      		rcall div24x24_24 ;r24:r23:r22 = r24:r23:r22 / r21:r20:r19
                  
-000363 e035      		ldi r19, 5
-000364 9f63      		mul r22, r19
+00039f e035      		ldi r19, 5
+0003a0 9f63      		mul r22, r19
                  
-000365 2d60      		mov r22, r0
+0003a1 2d60      		mov r22, r0
                  
-000366 936f      		push r22
+0003a2 936f      		push r22
                  
                  				
                  
@@ -1692,217 +1759,227 @@ E:\RealTimeControlAssignment\AVR Assignment\AVR Assignment\AVR Assignment.asm(10
                  		//L =us fl oz / 33.814
                  		//L =uk fl oz / 35.195
                  
-000367 b164      		in r22, ADCL
+0003a3 b164      		in r22, ADCL
                  
-000368 ee48      		ldi r20, low(1000)
-000369 e053      		ldi r21, high(1000)
-00036a 2777      		clr r23
+0003a4 ee48      		ldi r20, low(1000)
+0003a5 e053      		ldi r21, high(1000)
+0003a6 2777      		clr r23
                  
-00036b de9b      		rcall mul16x16_32 ;r19:r18:r17:r16 = r23:r22 * r21:r20
+0003a7 de5f      		rcall mul16x16_32 ;r19:r18:r17:r16 = r23:r22 * r21:r20
                  
                  		
-00036c e136      		ldi r19, low(33814)
-00036d e844      		ldi r20, high(33814)
-00036e 2755      		clr r21
+0003a8 e136      		ldi r19, low(33814)
+0003a9 e844      		ldi r20, high(33814)
+0003aa 2755      		clr r21
                  
-00036f 2f82      		mov r24, r18
-000370 2f71      		mov r23, r17
-000371 2f60      		mov r22, r16
+0003ab 2f82      		mov r24, r18
+0003ac 2f71      		mov r23, r17
+0003ad 2f60      		mov r22, r16
                  
-000372 df14      		rcall div24x24_24 ;r24:r23:r22 = r24:r23:r22 / r21:r20:r19
+0003ae ded8      		rcall div24x24_24 ;r24:r23:r22 = r24:r23:r22 / r21:r20:r19
                  
-000373 2f76      		mov r23, r22
+0003af 2f76      		mov r23, r22
                  		
-000374 916f      		pop r22
+0003b0 916f      		pop r22
                  
-000375 d0c0      		rcall PopAll
-000376 9508      		RET
+0003b1 910f
+0003b2 bf0f
+0003b3 900f
+0003b4 901f
+0003b5 910f
+0003b6 911f
+0003b7 912f
+0003b8 913f
+0003b9 914f
+0003ba 915f
+0003bb 916f
+0003bc 917f
+0003bd 918f      		PopAll
+0003be 9508      		RET
                  
                  
                  ;***************** Start of Task3 *****************
                  Task_3:	;Start_Task 	3	;Turn output indicator pin On
                  		
-000377 d0c8      		rcall PushAll
+0003bf 938f
+0003c0 937f
+0003c1 936f
+0003c2 935f
+0003c3 934f
+0003c4 933f
+0003c5 932f
+0003c6 931f
+0003c7 930f
+0003c8 921f
+0003c9 920f
+0003ca b70f
+0003cb 930f      		PushAll
                  		
                  		;Allow ONLY the Collision code to interrupt this
-000378 e001      		ldi r16, 1
-000379 9300 006e 		sts FuelInjRunning, r16
+0003cc e001      		ldi r16, 1
+0003cd 9300 006e 		sts FuelInjRunning, r16
                  
-00037b 9478      		sei 
+0003cf 9478      		sei 
                  
-00037c e0f2      		ldi ZH, high(RPMLoad_Lookup<<1)
-00037d e0e0      		ldi ZL, low(RPMLoad_Lookup<<1)
+0003d0 e0f2      		ldi ZH, high(RPMLoad_Lookup<<1)
+0003d1 e0e0      		ldi ZL, low(RPMLoad_Lookup<<1)
                  
                  		 ; Read 10-bit ADC conversion result ; optimisation possible
-00037e b124      		 in r18, ADCL
-00037f b135      		 in r19, ADCH
+0003d2 b124      		 in r18, ADCL
+0003d3 b135      		 in r19, ADCH
                  
                  		 ;mov r18, r16 ; low
                  		 ;mov r19, r17 ; high
                  		 
                  		 ;RPM Level Lookup stored in r21
-000380 2744      		 clr r20
-000381 fd27      		 sbrc r18, 7 ; Skip if bit 7 in ADCL is clear
-000382 6042      		 sbr r20, $02;
+0003d4 2744      		 clr r20
+0003d5 fd27      		 sbrc r18, 7 ; Skip if bit 7 in ADCL is clear
+0003d6 6042      		 sbr r20, $02;
                  
-000383 fd26      		 sbrc r18, 6 ; Skip if bit 6 in ADCL is clear
-000384 6041      		 sbr r20, $01;
+0003d7 fd26      		 sbrc r18, 6 ; Skip if bit 6 in ADCL is clear
+0003d8 6041      		 sbr r20, $01;
                  
-000385 e054      		 ldi r21, 4; store 4 in r20, used below
-000386 9f45      		 mul r20, r21; Multiply r20 (the ADC result) by 4 
+0003d9 e054      		 ldi r21, 4; store 4 in r20, used below
+0003da 9f45      		 mul r20, r21; Multiply r20 (the ADC result) by 4 
                  
-000387 2d50      		 mov r21, r0 ; Move the result of the multiplication to r21
+0003db 2d50      		 mov r21, r0 ; Move the result of the multiplication to r21
                  
                  		 ;Load lookup stored in r20
-000388 2744      		 clr r20
-000389 fd25      		 sbrc r18,  5; Skip if bit 5 in ADCL is clear
-00038a 6042      		 sbr r20, $02;
+0003dc 2744      		 clr r20
+0003dd fd25      		 sbrc r18,  5; Skip if bit 5 in ADCL is clear
+0003de 6042      		 sbr r20, $02;
                  
-00038b fd24      		 sbrc r18, 4 ; Skip if bit 4 in ADCL is clear
-00038c 6041      		 sbr r20, $01;
+0003df fd24      		 sbrc r18, 4 ; Skip if bit 4 in ADCL is clear
+0003e0 6041      		 sbr r20, $01;
                  
-00038d 0f54      		 add r21, r20 ; Add the load to the previous RPM level
+0003e1 0f54      		 add r21, r20 ; Add the load to the previous RPM level
                  
-00038e 0fe5      		 add ZL, r21
+0003e2 0fe5      		 add ZL, r21
                  
-00038f 9164      		 lpm r22, z
+0003e3 9164      		 lpm r22, z
                  
                  
                  
                  		 //Factor A lookup
-000390 e0f2      		 ldi ZH, high(FactorA_Lookup<<1)
-000391 e1e0      		 ldi ZL, low(FactorA_Lookup<<1)
+0003e4 e0f2      		 ldi ZH, high(FactorA_Lookup<<1)
+0003e5 e1e0      		 ldi ZL, low(FactorA_Lookup<<1)
                  
                  
-000392 2744      		 clr r20
-000393 fd23      		 sbrc r18,  3; Skip if bit 3 in ADCL is clear
-000394 6042      		 sbr r20, $02;
+0003e6 2744      		 clr r20
+0003e7 fd23      		 sbrc r18,  3; Skip if bit 3 in ADCL is clear
+0003e8 6042      		 sbr r20, $02;
                  
-000395 fd22      		 sbrc r18, 2 ; Skip if bit 2 in ADCL is clear
-000396 6041      		 sbr r20, $01;
+0003e9 fd22      		 sbrc r18, 2 ; Skip if bit 2 in ADCL is clear
+0003ea 6041      		 sbr r20, $01;
                  
-000397 0fe4      		 add ZL, r20
+0003eb 0fe4      		 add ZL, r20
                  
-000398 9174      		 lpm r23, z
+0003ec 9174      		 lpm r23, z
                  
                  
                  		 //Factor B lookup
-000399 e0f2      		 ldi ZH, high(FactorB_Lookup<<1)
-00039a e1e4      		 ldi ZL, low(FactorB_Lookup<<1)
+0003ed e0f2      		 ldi ZH, high(FactorB_Lookup<<1)
+0003ee e1e4      		 ldi ZL, low(FactorB_Lookup<<1)
                  
                  
-00039b 2744      		 clr r20
-00039c fd21      		 sbrc r18,  1; Skip if bit 1 in ADCL is clear
-00039d 6042      		 sbr r20, $02;
+0003ef 2744      		 clr r20
+0003f0 fd21      		 sbrc r18,  1; Skip if bit 1 in ADCL is clear
+0003f1 6042      		 sbr r20, $02;
                  
-00039e fd20      		 sbrc r18, 0; Skip if bit 0 in ADCL is clear
-00039f 6041      		 sbr r20, $01;
+0003f2 fd20      		 sbrc r18, 0; Skip if bit 0 in ADCL is clear
+0003f3 6041      		 sbr r20, $01;
                  
-0003a0 0fe4      		 add ZL, r20
+0003f4 0fe4      		 add ZL, r20
                  
-0003a1 9184      		 lpm r24, z
+0003f5 9184      		 lpm r24, z
                  
                  
                  		 //Calculate Pulse Width
                  
                  		 
-0003a2 9f76      		 mul r23, r22
+0003f6 9f76      		 mul r23, r22
                  
-0003a3 2d70      		 mov r23,r0
+0003f7 2d70      		 mov r23,r0
                  
-0003a4 9f87      		 mul r24, r23 ; x FactorB
+0003f8 9f87      		 mul r24, r23 ; x FactorB
                  
-0003a5 2d71      		 mov r23, r1
-0003a6 2d60      		 mov r22, r0
+0003f9 2d71      		 mov r23, r1
+0003fa 2d60      		 mov r22, r0
                  
-0003a7 e238      		 ldi r19, 40; divisor
+0003fb e238      		 ldi r19, 40; divisor
                  
-0003a8 2788      		 clr r24;
-0003a9 2755      		 clr r21;
-0003aa 2744      		 clr r20;
+0003fc 2788      		 clr r24;
+0003fd 2755      		 clr r21;
+0003fe 2744      		 clr r20;
                  		 ;Finally we divide by 40
-0003ab 2700      		 clr r16
-0003ac 2400      		 clr r0
-0003ad ded9      		 rcall div24x24_24 ;r24:r23:r22 = r24:r23:r22 / r21:r20:r19
-                 		 
-                 		 ;Workaround: If r22 == 255, set r22 = 1
-                 		/* cpi r24, 1
-                 		 brsh HandleOverflow
-                 		 rjmp NoOverflow
-                 		 HandleOverflow:
-                 		 ldi r22, 1
-                 		 clr r23
-                 		 clr r24
-                 
-                 		 NoOverflow: 
-                 		 ldi r19,2
-                 		 clr r16
-                 		 clr r17
-                 		 clr r18*/
+0003ff 2700      		 clr r16
+000400 2400      		 clr r0
+000401 de85      		 rcall div24x24_24 ;r24:r23:r22 = r24:r23:r22 / r21:r20:r19
+                 		 	
+000402 e032      		 ldi r19,2
+                 				 
+000403 de83      		 rcall div24x24_24 ;r24:r23:r22 = r24:r23:r22 / r21:r20:r19
                  		 
                  		 
-0003ae ded8      		 rcall div24x24_24 ;r24:r23:r22 = r24:r23:r22 / r21:r20:r19
+000404 9360 0067 		 sts PulseWidth, r22
                  		 
-                 		 ;Workaround: If r22 == 255, set r22 = 1
-                 /*		 cpi r24, 1
-                 		 brsh HandleOverflow2
-                 		 rjmp NoOverflow2
-                 		 HandleOverflow2:
-                 		 ldi r22, 1
-                 		 clr r23
-                 		 clr r24
-                 
-                 		 NoOverflow2: */
-                 
-0003af 9360 0067 		 sts PulseWidth, r22
-                 /*		 clr r16
-                 		 clr r17
-                 		 clr r18*/
                  
                  		 
                  		 ;error check if PulseWidth is 0, if true then branch to set it to 1, otherwise do nothing
-0003b1 3060      		 cpi r22, 0
-0003b2 f009      		 breq SetToOne
-0003b3 c003      		 rjmp NoSetToOne
+000406 3060      		 cpi r22, 0
+000407 f009      		 breq SetToOne
+000408 c003      		 rjmp NoSetToOne
                  
                  		 SetToOne:
-0003b4 e061      		 ldi r22, 1
-0003b5 9360 0067 		 sts PulseWidth, r22
+000409 e061      		 ldi r22, 1
+00040a 9360 0067 		 sts PulseWidth, r22
                  		 
                  		 NoSetToOne:
                  		 ;Clear the FuelInjRunning flag
-0003b7 e000      		 ldi r16, 0
-0003b8 9300 006e 		 sts FuelInjRunning, r16 
+00040c e000      		 ldi r16, 0
+00040d 9300 006e 		 sts FuelInjRunning, r16 
                  
                  		 ;********* Interrupt callback ***************
                  		 ;If the left right indicator was interrupted, run it
-0003ba 9100 006f 		 lds r16, LeftRightInterrupted
-0003bc fd00      		 sbrc r16, 0
-0003bd df34      		 rcall ClockTickLeftRight
+00040f 9100 006f 		 lds r16, LeftRightInterrupted
+000411 fd00      		 sbrc r16, 0
+000412 def7      		 rcall ClockTickLeftRight
                  		 
-0003be 9100 0000 		 lds r16, 0
-0003c0 9300 006f 		 sts LeftRightInterrupted, r16 ; clear the flag
+000413 9100 0000 		 lds r16, 0
+000415 9300 006f 		 sts LeftRightInterrupted, r16 ; clear the flag
                  
                  
                  		 ; Car door callback
-0003c2 9100 0070 		 lds r16, CarDoorInterrupted
-0003c4 fd00      		 sbrc r16, 0
-0003c5 d006      		 rcall IntV0
+000417 9100 0070 		 lds r16, CarDoorInterrupted
+000419 fd00      		 sbrc r16, 0
+00041a d038      		 rcall RunCarDoor
                  		 
-0003c6 9100 0000 		 lds r16, 0
-0003c8 9300 0070 		 sts CarDoorInterrupted, r16 ; clear the flag
+00041b 9100 0000 		 lds r16, 0
+00041d 9300 0070 		 sts CarDoorInterrupted, r16 ; clear the flag
                  		 
                  
                  
                  
                  		 ;********* End Interrupt callback ***************
                  
-0003ca d06b      		 rcall PopAll
+00041f 910f
+000420 bf0f
+000421 900f
+000422 901f
+000423 910f
+000424 911f
+000425 912f
+000426 913f
+000427 914f
+000428 915f
+000429 916f
+00042a 917f
+00042b 918f      		 PopAll
                  
                  
                  
                  		; End_Task	3	;Turn output indicator pin Off
-0003cb 9508      		RET
+00042c 9508      		RET
                  ;***************** End Task3 **********************
                  
                  
@@ -1912,47 +1989,108 @@ E:\RealTimeControlAssignment\AVR Assignment\AVR Assignment\AVR Assignment.asm(10
                  ; DOOR OPEN LIGHT LED PB4
                  
                  IntV0:
-0003cc d073      		rcall PushAll
+00042d 938f
+00042e 937f
+00042f 936f
+000430 935f
+000431 934f
+000432 933f
+000433 932f
+000434 931f
+000435 930f
+000436 921f
+000437 920f
+000438 b70f
+000439 930f      		PushAll
                  		;If the fuel injection code was running:
-0003cd 9100 006e 		lds r16, FuelInjRunning
-0003cf 9110 0071 		lds r17, IndicatorRunning
-0003d1 2b01      		or r16, r17
-0003d2 e011      		ldi r17, 1
-0003d3 1301      		cpse r16, r17 ;Compare skip if equal
-0003d4 c005      			rjmp RunCarDoor
-0003d5 e001      		ldi r16, 1
-0003d6 9300 0070 		sts CarDoorInterrupted, r16
+00043a 9100 006e 		lds r16, FuelInjRunning
+00043c 9110 0071 		lds r17, IndicatorRunning
+00043e 2b01      		or r16, r17
+00043f e011      		ldi r17, 1
+000440 1301      		cpse r16, r17 ;Compare skip if equal
+000441 c011      			rjmp RunCarDoor
+000442 e001      		ldi r16, 1
+000443 9300 0070 		sts CarDoorInterrupted, r16
                  
-0003d8 d05d      		rcall PopAll
-0003d9 9518      		reti
+000445 910f
+000446 bf0f
+000447 900f
+000448 901f
+000449 910f
+00044a 911f
+00044b 912f
+00044c 913f
+00044d 914f
+00044e 915f
+00044f 916f
+000450 917f
+000451 918f      		PopAll
+000452 9518      		reti
                  
                  		;Allow collision to interrupt, disallow door code to interrupt
                  		
                  
                  		RunCarDoor:
+000453 938f
+000454 937f
+000455 936f
+000456 935f
+000457 934f
+000458 933f
+000459 932f
+00045a 931f
+00045b 930f
+00045c 921f
+00045d 920f
+00045e b70f
+00045f 930f      		PushAll
                  		;Not interrupted
-0003da e000      		ldi r16, 0
-0003db 9300 0070 		sts CarDoorInterrupted, r16
-0003dd 9478      		sei		;Enable interrupts!!!
+000460 e000      		ldi r16, 0
+000461 9300 0070 		sts CarDoorInterrupted, r16
+000463 9478      		sei		;Enable interrupts!!!
                  		; ***** Code below
                  
                  
                  		;Check the PB2 bit. If it is set, the door WAS shut (LED off) and it's now open. We want to turn ON the LED. 
-0003de 99c2      		sbic PORTB, PB2
-0003df c003      		rjmp door_shut
+000464 99c2      		sbic PORTB, PB2
+000465 c00f      		rjmp door_shut
                  
                  		;if door was open (PB4 == 0), it is shut now
                  		
-0003e0 9ac2      		sbi PORTB, PB2  ;SET the door LED - LED is OFF
-0003e1 d054      		rcall PopAll
-0003e2 9518      		RETI			;Return from Interurpt
+000466 9ac2      		sbi PORTB, PB2  ;SET the door LED - LED is OFF
+000467 910f
+000468 bf0f
+000469 900f
+00046a 901f
+00046b 910f
+00046c 911f
+00046d 912f
+00046e 913f
+00046f 914f
+000470 915f
+000471 916f
+000472 917f
+000473 918f      		PopAll
+000474 9518      		RETI			;Return from Interurpt
                  
                  		door_shut:
                  		;if door was shut, we set it as open
-0003e3 98c2      		cbi PORTB, PB2	;Clear the door LED - LED is ON 
+000475 98c2      		cbi PORTB, PB2	;Clear the door LED - LED is ON 
                  
-0003e4 d051      		rcall PopAll
-0003e5 9518      		RETI			;Return from Interurpt
+000476 910f
+000477 bf0f
+000478 900f
+000479 901f
+00047a 910f
+00047b 911f
+00047c 912f
+00047d 913f
+00047e 914f
+00047f 915f
+000480 916f
+000481 917f
+000482 918f      		PopAll
+000483 9518      		RETI			;Return from Interurpt
                  ;***************** End External Interrupt **********************
                  
                  
@@ -1960,41 +2098,77 @@ E:\RealTimeControlAssignment\AVR Assignment\AVR Assignment\AVR Assignment.asm(10
                  
                  ;***************** Collision Detection*****************
                  ADCF0:	;Start_Task 	2 	;Turn output indicator pin On
-0003e6 d059      		rcall PushAll
+000484 938f
+000485 937f
+000486 936f
+000487 935f
+000488 934f
+000489 933f
+00048a 932f
+00048b 931f
+00048c 930f
+00048d 921f
+00048e 920f
+00048f b70f
+000490 930f      		PushAll
                  		;********* Write Task  here ********
-0003e7 b164      		in r22, ADCL
-0003e8 b175      		in r23, ADCH
-0003e9 2744      		clr r20
+000491 b164      		in r22, ADCL
+000492 b175      		in r23, ADCH
+000493 2744      		clr r20
                  
                  		;obtain 2 LSB of ADCH, store in r20
-0003ea fd71      		sbrc r23,  1; Skip if bit 1 in ADCH is clear
-0003eb 6048      		sbr r20, $08;
+000494 fd71      		sbrc r23,  1; Skip if bit 1 in ADCH is clear
+000495 6048      		sbr r20, $08;
                  
-0003ec fd70      		sbrc r23, 0; Skip if bit 0 in ADCH is clear
-0003ed 6044      		sbr r20, $04;
+000496 fd70      		sbrc r23, 0; Skip if bit 0 in ADCH is clear
+000497 6044      		sbr r20, $04;
                  
                  
                  		;obtain 2 MSB of ADCL, store in r20
-0003ee fd67      		sbrc r22,  7; Skip if bit 7 in ADCL is clear
-0003ef 6042      		sbr r20, $02;
+000498 fd67      		sbrc r22,  7; Skip if bit 7 in ADCL is clear
+000499 6042      		sbr r20, $02;
                  
-0003f0 fd66      		sbrc r22, 6; Skip if bit 6 in ADCL is clear
-0003f1 6041      		sbr r20, $01;
+00049a fd66      		sbrc r22, 6; Skip if bit 6 in ADCL is clear
+00049b 6041      		sbr r20, $01;
                  
                  		
-0003f2 3044      		cpi r20, 4
-0003f3 f418      		brsh collision
-0003f4 9ac4      		sbi PORTB, PB4 ;Collision has NOT occurred. Turn off LED at PB4 by setting the bit
+00049c 3044      		cpi r20, 4
+00049d f478      		brsh collision
+00049e 9ac4      		sbi PORTB, PB4 ;Collision has NOT occurred. Turn off LED at PB4 by setting the bit
                  			
-0003f5 d040      		rcall PopAll		
-0003f6 9518      		RETI
+00049f 910f
+0004a0 bf0f
+0004a1 900f
+0004a2 901f
+0004a3 910f
+0004a4 911f
+0004a5 912f
+0004a6 913f
+0004a7 914f
+0004a8 915f
+0004a9 916f
+0004aa 917f
+0004ab 918f      		PopAll		
+0004ac 9518      		RETI
                  
                  
                  		collision:
-0003f7 98c4      		cbi PORTB, PB4 ;Collision has occurred. Turn on LED at PB4 by clearing the bit
+0004ad 98c4      		cbi PORTB, PB4 ;Collision has occurred. Turn on LED at PB4 by clearing the bit
                  			
-0003f8 d03d      		rcall PopAll	
-0003f9 9518      		RETI
+0004ae 910f
+0004af bf0f
+0004b0 900f
+0004b1 901f
+0004b2 910f
+0004b3 911f
+0004b4 912f
+0004b5 913f
+0004b6 914f
+0004b7 915f
+0004b8 916f
+0004b9 917f
+0004ba 918f      		PopAll	
+0004bb 9518      		RETI
                  		
                  		;end of collision
                  		
@@ -2007,127 +2181,135 @@ E:\RealTimeControlAssignment\AVR Assignment\AVR Assignment\AVR Assignment.asm(10
                  
                  ;To use, connect P
                  IntV1:
-0003fa d045      		rcall PushAll
+0004bc 938f
+0004bd 937f
+0004be 936f
+0004bf 935f
+0004c0 934f
+0004c1 933f
+0004c2 932f
+0004c3 931f
+0004c4 930f
+0004c5 921f
+0004c6 920f
+0004c7 b70f
+0004c8 930f      		PushAll
                  
                  		
                  		
                  		
                  
-0003fb 9100 0073 		lds r16, LeftToggled; check if left toggle was pressed already
-0003fd 3001      		cpi r16, 1
-0003fe f431      		brne AllowToggleLeft
+0004c9 9100 0073 		lds r16, LeftToggled; check if left toggle was pressed already
+0004cb 3001      		cpi r16, 1
+0004cc f431      		brne AllowToggleLeft
                  		; left Toggle not allowed
-0003ff 9b85      		sbis PIND, PD5 ; Left Broken toggle
-000400 c00a      			rjmp CheckRightToggle
-000401 e000      		ldi r16, 0
-000402 9300 0073 		sts LeftToggled, r16
-000404 c006      		rjmp CheckRightToggle
+0004cd 9b85      		sbis PIND, PD5 ; Left Broken toggle
+0004ce c00a      			rjmp CheckRightToggle
+0004cf e000      		ldi r16, 0
+0004d0 9300 0073 		sts LeftToggled, r16
+0004d2 c006      		rjmp CheckRightToggle
                  
                  		AllowToggleLeft:
-000405 9985      		sbic PIND, PD5 ; Left Broken toggle
-000406 c004      			rjmp CheckRightToggle
+0004d3 9985      		sbic PIND, PD5 ; Left Broken toggle
+0004d4 c004      			rjmp CheckRightToggle
                  
-000407 d016      		rcall LeftStatusToggle	;change the state of the left switch
-000408 e001      		ldi r16, 1
-000409 9300 0073 		sts LeftToggled, r16
+0004d5 d02e      		rcall LeftStatusToggle	;change the state of the left switch
+0004d6 e001      		ldi r16, 1
+0004d7 9300 0073 		sts LeftToggled, r16
                  		
                  
                  		CheckRightToggle:
                  		
-00040b 9100 0074 		lds r16, RightToggled ; check if right toggle was pressed already
-00040d 3001      		cpi r16, 1
-00040e f439      		brne AllowToggleRight
+0004d9 9100 0074 		lds r16, RightToggled ; check if right toggle was pressed already
+0004db 3001      		cpi r16, 1
+0004dc f499      		brne AllowToggleRight
                  		;Right Toggle not allowed
-00040f 9b84      		sbis PIND, PD4
-000410 c00b      			rjmp ReturnFromIntV1
+0004dd 9b84      		sbis PIND, PD4
+0004de c017      			rjmp ReturnFromIntV1
                  
-000411 e000      		ldi r16, 0
-000412 9300 0074 		sts RightToggled, r16
-000414 d021      		rcall PopAll
-000415 9518      		reti
+0004df e000      		ldi r16, 0
+0004e0 9300 0074 		sts RightToggled, r16
+0004e2 910f
+0004e3 bf0f
+0004e4 900f
+0004e5 901f
+0004e6 910f
+0004e7 911f
+0004e8 912f
+0004e9 913f
+0004ea 914f
+0004eb 915f
+0004ec 916f
+0004ed 917f
+0004ee 918f      		PopAll
+0004ef 9518      		reti
                  
                  		AllowToggleRight:
-000416 9984      		sbic PIND, PD4; Right Broken toggle
-000417 c004      			rjmp ReturnFromIntV1
+0004f0 9984      		sbic PIND, PD4; Right Broken toggle
+0004f1 c004      			rjmp ReturnFromIntV1
                  
-000418 d011      		rcall RightStatusToggle ;change the state of the right switch
-000419 e001      		ldi r16, 1
-00041a 9300 0074 		sts RightToggled, r16
+0004f2 d01d      		rcall RightStatusToggle ;change the state of the right switch
+0004f3 e001      		ldi r16, 1
+0004f4 9300 0074 		sts RightToggled, r16
                  		
                  		
                  
                  		ReturnFromIntV1:
-00041c d019      			rcall PopAll
-00041d 9518      			reti
+0004f6 910f
+0004f7 bf0f
+0004f8 900f
+0004f9 901f
+0004fa 910f
+0004fb 911f
+0004fc 912f
+0004fd 913f
+0004fe 914f
+0004ff 915f
+000500 916f
+000501 917f
+000502 918f      			PopAll
+000503 9518      			reti
                  
                  ;************ Toggle Normal / Broken state ************* 
                  
                  ;Left toggle
                  LeftStatusToggle:
                  
-00041e 9100 0068 		lds r16, LeftBroken
+000504 9100 0068 		lds r16, LeftBroken
                  
-000420 3001      		cpi r16, 1
-000421 f021      		breq SetLeftTo0
+000506 3001      		cpi r16, 1
+000507 f021      		breq SetLeftTo0
                  		
-000422 e001      		ldi r16, 1
-000423 9300 0068 		sts LeftBroken, r16
-000425 9508      		ret
+000508 e001      		ldi r16, 1
+000509 9300 0068 		sts LeftBroken, r16
+00050b 9508      		ret
                  		
                  		SetLeftTo0:
                  
-000426 e000      		ldi r16, 0
-000427 9300 0068 		sts LeftBroken, r16
-000429 9508      		ret
+00050c e000      		ldi r16, 0
+00050d 9300 0068 		sts LeftBroken, r16
+00050f 9508      		ret
                  
                  ;Right toggle
                  RightStatusToggle:
                  
-00042a 9100 006b 		lds r16, RightBroken
+000510 9100 006b 		lds r16, RightBroken
                  
-00042c 3001      		cpi r16, 1
-00042d f021      		breq SetRightTo0
+000512 3001      		cpi r16, 1
+000513 f021      		breq SetRightTo0
                  		
-00042e e001      		ldi r16, 1
-00042f 9300 006b 		sts RightBroken, r16
-000431 9508      		ret
+000514 e001      		ldi r16, 1
+000515 9300 006b 		sts RightBroken, r16
+000517 9508      		ret
                  		
                  		SetRightTo0:
                  
-000432 e000      		ldi r16, 0
-000433 9300 006b 		sts RightBroken, r16
-000435 9508      		ret
+000518 e000      		ldi r16, 0
+000519 9300 006b 		sts RightBroken, r16
+00051b 9508      		ret
                  ;**************** end ******************
                  
                  
-                  ;************push and pop potential register used****************
-                 PopAll:
-000436 910f      	pop r16
-000437 911f      	pop r17
-000438 912f      	pop r18
-000439 913f      	pop r19
-00043a 914f      	pop r20
-00043b 915f      	pop r21
-00043c 916f      	pop r22
-00043d 917f      	pop r23
-00043e 918f      	pop r24
-                 
-00043f 9508      	ret
-                 
-                 
-                 
-                 PushAll:
-000440 938f      	push r24
-000441 937f      	push r23
-000442 936f      	push r22
-000443 935f      	push r21
-000444 934f      	push r20
-000445 933f      	push r19
-000446 932f      	push r18
-000447 931f      	push r17
-000448 930f      	push r16
-                 
-000449 9508      	ret
 
 
 RESOURCE USE INFORMATION
@@ -2145,10 +2327,10 @@ counted separately from r26..r31 here.
 .dseg memory usage only counts static data declared with .byte
 
 "ATmega8" register use summary:
-r0 :  36 r1 :  30 r2 :  41 r3 :   0 r4 :   5 r5 :   4 r6 :   0 r7 :   0 
+r0 :  55 r1 :  49 r2 :  41 r3 :   0 r4 :   5 r5 :   4 r6 :   0 r7 :   0 
 r8 :   0 r9 :   0 r10:   0 r11:   0 r12:   0 r13:   0 r14:   0 r15:   0 
-r16: 148 r17:  50 r18:  42 r19:  46 r20:  51 r21:  29 r22:  40 r23:  32 
-r24:   8 r25:   2 r26:   0 r27:   0 r28:   0 r29:   0 r30:   6 r31:   3 
+r16: 203 r17:  67 r18:  59 r19:  64 r20:  68 r21:  46 r22:  57 r23:  49 
+r24:  25 r25:   2 r26:   0 r27:   0 r28:   0 r29:   0 r30:   6 r31:   3 
 x  :   0 y  :   0 z  :   3 
 Registers used: 18 out of 35 (51.4%)
 
@@ -2162,10 +2344,10 @@ bset  :   0 bst   :   0 cbi   :   4 cbr   :   0 clc   :   2 clh   :   0
 cli   :   0 cln   :   0 clr   :  28 cls   :   0 clt   :   0 clv   :   0 
 clz   :   0 com   :   0 cp    :   1 cpc   :   0 cpi   :   6 cpse  :   2 
 dec   :   2 eor   :   0 fmul  :   3 fmuls :   3 fmulsu:   6 icall :   0 
-ijmp  :   0 in    :   6 inc   :   1 ld    :   0 ldd   :   0 ldi   :  61 
+ijmp  :   0 in    :  14 inc   :   1 ld    :   0 ldd   :   0 ldi   :  62 
 lds   :  23 lpm   :   6 lsl   :   0 lsr   :   0 mov   :   9 movw  :   9 
 mul   :  14 muls  :   3 mulsu :   6 neg   :   0 nop   :   0 or    :   5 
-ori   :   0 out   :  18 pop   :  11 push  :  10 rcall :  34 ret   :  20 
+ori   :   0 out   :  29 pop   : 134 push  :  97 rcall :  16 ret   :  18 
 reti  :  10 rjmp  :  31 rol   :   8 ror   :   0 sbc   :  14 sbci  :   0 
 sbi   :   4 sbic  :   5 sbis  :   4 sbiw  :   0 sbr   :  12 sbrc  :  15 
 sbrs  :   4 sec   :   2 seh   :   0 sei   :   5 sen   :   0 ser   :   0 
@@ -2177,7 +2359,7 @@ Instructions used: 46 out of 110 (41.8%)
 "ATmega8" memory use summary [bytes]:
 Segment   Begin    End      Code   Data   Used    Size   Use%
 ---------------------------------------------------------------
-[.cseg] 0x000000 0x000894   1178     24   1202    8192  14.7%
+[.cseg] 0x000000 0x000a38   1598     24   1622    8192  19.8%
 [.dseg] 0x000060 0x000075      0     14     14    1024   1.4%
 [.eseg] 0x000000 0x000000      0      0      0     512   0.0%
 
