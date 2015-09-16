@@ -1,5 +1,5 @@
 
-AVRASM ver. 2.1.57  E:\RealTimeControlAssignment\AVR Assignment\AVR Assignment\AVR Assignment.asm Wed Sep 16 20:29:08 2015
+AVRASM ver. 2.1.57  E:\RealTimeControlAssignment\AVR Assignment\AVR Assignment\AVR Assignment.asm Wed Sep 16 21:30:00 2015
 
 
 EQU  SIGNATURE_000 0000001e
@@ -522,8 +522,10 @@ DSEG PulseCounterSchedule 00000072
 DSEG LeftToggled  00000073
 DSEG RightToggled 00000074
 CSEG Main         000002b1
-CSEG IntV0        0000042d
-CSEG ADCF0        00000484
+CSEG IntV0        0000042f
+CSEG ADCF0        0000047a
+CSEG ClockTick    000002e1
+CSEG ClockTickLeftRight 0000030c
 CSEG RPMLoad_Lookup 00000100
 CSEG FactorA_Lookup 00000108
 CSEG FactorB_Lookup 0000010a
@@ -547,31 +549,27 @@ EQU  ClockTick_Task 00000000
 EQU  UpTime       ffffffff
 CSEG System_Monitor 000002ae
 CSEG forever      000002df
-CSEG Task_3       000003bf
-CSEG ClockTick    000002e1
-CSEG SkipTask     000002f8
-CSEG MonitorTask  00000389
-CSEG ClockTickLeftRight 0000030a
-CSEG RunLeftRight 00000321
-CSEG IntV1        000004bc
-CSEG LeftLEDON    00000341
-CSEG RightLED     00000350
-CSEG TurnOnLeftLater 0000033d
-CSEG TurnOffLeftLater 0000034d
-CSEG RightLEDON   00000364
-CSEG CarDoorCallback 00000373
-CSEG TurnOnRightLater 00000360
-CSEG TurnOffRightLater 00000370
-CSEG SetToOne     00000409
-CSEG NoSetToOne   0000040c
-CSEG RunCarDoor   00000453
-CSEG door_shut    00000475
-CSEG collision    000004ad
-CSEG AllowToggleLeft 000004d3
-CSEG CheckRightToggle 000004d9
-CSEG LeftStatusToggle 00000504
-CSEG AllowToggleRight 000004f0
-CSEG ReturnFromIntV1 000004f6
-CSEG RightStatusToggle 00000510
-CSEG SetLeftTo0   0000050c
-CSEG SetRightTo0  00000518
+CSEG Task_3       000003c1
+CSEG SkipTask     000002fa
+CSEG MonitorTask  0000038b
+CSEG RunLeftRight 00000323
+CSEG IntV1        000004b2
+CSEG LeftLEDON    00000343
+CSEG RightLED     00000352
+CSEG TurnOnLeftLater 0000033f
+CSEG TurnOffLeftLater 0000034f
+CSEG RightLEDON   00000366
+CSEG CarDoorCallback 00000375
+CSEG TurnOnRightLater 00000362
+CSEG TurnOffRightLater 00000372
+CSEG SetToOne     0000040b
+CSEG NoSetToOne   0000040e
+CSEG PrepareToRunCarDoor 00000455
+CSEG RunCarDoor   00000456
+CSEG door_shut    0000046b
+CSEG collision    000004a3
+CSEG LeftStatusToggle 000004d1
+CSEG RightStatusToggle 000004dd
+CSEG ReturnFromIntV1 000004c3
+CSEG SetLeftTo0   000004d9
+CSEG SetRightTo0  000004e5

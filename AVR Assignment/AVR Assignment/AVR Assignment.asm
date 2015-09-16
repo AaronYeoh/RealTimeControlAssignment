@@ -95,10 +95,10 @@ ld r1,Z ; Load VAR1 into register 1
 ;		rjmp IntV1			;INT vector - for toggling the light state
 .org ADCCaddr
 		rjmp ADCF0
-;.org OVF0addr				;Setting Origin Address
-;		rjmp ClockTick 		;ClockTick vector
-;.org OVF1addr				;Setting Origin Address
-;		rjmp ClockTickLeftRight 		;ClockTick vector
+.org OVF0addr				;Setting Origin Address
+		rjmp ClockTick 		;ClockTick vector
+.org OVF1addr				;Setting Origin Address
+		rjmp ClockTickLeftRight 		;ClockTick vector
 
 ;.cseg
 .org   0x0100               ;table address engine speed (RPM) and load
@@ -133,7 +133,7 @@ Main:
 
 		;Set the DDR for PORTB, allowing for us to write out
 
-		ldi r16, (1<<PB0) | (1 << PB2) | (1 << PB4) | (1 << PB1)
+		ldi r16, $FF
 		out DDRB, r16
 		out PORTB, r16
 		;sbi DDRB, PB0; left LED
@@ -170,10 +170,10 @@ Main:
 		;cbi DDRC,PC1		; DELETE ?
 
 		;********* ClockTick 8-bit Timer/Counter 0 *******      
-		ldi r16, (1<<CS01)      ; Start Counter 0      
+		ldi r16, (1<<CS01)  | (1<<CS00)    ; Start Counter 0      
       	out TCCR0, r16			; Timer Clock = Sys Clock (1MHz) / 8 (prescaler)
 		
-		ldi	r16, 68				; MaxValue = TOVck (1.5ms or your Cal time) * Pck (1MHz) / 8 (prescaler)
+		ldi	r16, 128				; MaxValue = TOVck (1.5ms or your Cal time) * Pck (1MHz) / 8 (prescaler)
 		out TCNT0, r16			; TCNT0Value = 255 - MaxValue	
 		
 
@@ -234,10 +234,12 @@ forever:
 ClockTick:
 		;Start_Task 	ClockTick_Task	;Turn output indicator pin On
 		PushAll
+		
 		sei		;Enable interrupts!!!
 
 		;********* Write ClockTick Code here ********
-		
+		ldi	r16, 128				; MaxValue = TOVck (1.5ms or your Cal time) * Pck (1MHz) / 8 (prescaler)
+		out TCNT0, r16			; TCNT0Value = 255 - MaxValue
 		
 		;rcall IntV1
 		; FuelInjectionTimingTask HARD
@@ -670,7 +672,7 @@ Task_3:	;Start_Task 	3	;Turn output indicator pin On
 		 ; Car door callback
 		 lds r16, CarDoorInterrupted
 		 sbrc r16, 0
-		 rcall RunCarDoor
+		 rcall IntV0
 		 
 		 lds r16, 0
 		 sts CarDoorInterrupted, r16 ; clear the flag
@@ -692,7 +694,7 @@ Task_3:	;Start_Task 	3	;Turn output indicator pin On
 
 ;***************** Start of External Interrupt *****************
 ; Car door status switcher ISR - Soft Real Time   ;Done!
-; DOOR OPEN LIGHT LED PB4
+; DOOR OPEN LIGHT LED PB2
 
 IntV0:
 		PushAll
@@ -702,7 +704,7 @@ IntV0:
 		or r16, r17
 		ldi r17, 1
 		cpse r16, r17 ;Compare skip if equal
-			rjmp RunCarDoor
+			rjmp PrepareToRunCarDoor
 		ldi r16, 1
 		sts CarDoorInterrupted, r16
 
@@ -710,10 +712,10 @@ IntV0:
 		reti
 
 		;Allow collision to interrupt, disallow door code to interrupt
-		
+		PrepareToRunCarDoor:
+			rjmp RunCarDoor
 
 		RunCarDoor:
-		PushAll
 		;Not interrupted
 		ldi r16, 0
 		sts CarDoorInterrupted, r16
@@ -768,14 +770,14 @@ ADCF0:	;Start_Task 	2 	;Turn output indicator pin On
 		
 		cpi r20, 4
 		brsh collision
-		sbi PORTB, PB4 ;Collision has NOT occurred. Turn off LED at PB4 by setting the bit
+		cbi PORTB, PB4 ;Collision has NOT occurred. Turn off LED at PB4 by setting the bit
 			
 		PopAll		
 		RETI
 
 
 		collision:
-		cbi PORTB, PB4 ;Collision has occurred. Turn on LED at PB4 by clearing the bit
+		sbi PORTB, PB4 ;Collision has occurred. Turn on LED at PB4 by clearing the bit
 			
 		PopAll	
 		RETI
@@ -797,7 +799,7 @@ IntV1:
 		
 		
 
-		lds r16, LeftToggled; check if left toggle was pressed already
+/*		lds r16, LeftToggled; check if left toggle was pressed already
 		cpi r16, 1
 		brne AllowToggleLeft
 		; left Toggle not allowed
@@ -807,12 +809,11 @@ IntV1:
 		sts LeftToggled, r16
 		rjmp CheckRightToggle
 
-		AllowToggleLeft:
-		sbic PIND, PD5 ; Left Broken toggle
-			rjmp CheckRightToggle
-
+		AllowToggleLeft:*/
+		sbis PIND, PD5 ; Left Broken toggle ;rjmp CheckRightToggle
 		rcall LeftStatusToggle	;change the state of the left switch
-		ldi r16, 1
+		
+		/*ldi r16, 1
 		sts LeftToggled, r16
 		
 
@@ -824,19 +825,19 @@ IntV1:
 		;Right Toggle not allowed
 		sbis PIND, PD4
 			rjmp ReturnFromIntV1
-
-		ldi r16, 0
+*/
+/*		ldi r16, 0
 		sts RightToggled, r16
 		PopAll
 		reti
 
-		AllowToggleRight:
-		sbic PIND, PD4; Right Broken toggle
-			rjmp ReturnFromIntV1
+		AllowToggleRight: */
+		sbis PIND, PD4; Right Broken toggle rjmp ReturnFromIntV1
+			rcall RightStatusToggle ;change the state of the right switch
 
-		rcall RightStatusToggle ;change the state of the right switch
-		ldi r16, 1
-		sts RightToggled, r16
+		
+		/* ldi r16, 1
+		sts RightToggled, r16*/
 		
 		
 
