@@ -64,6 +64,9 @@ TurnOnRightNext: .byte 1
 TurnOffRightNext: .byte 1
 
 PulseCounterSchedule: .byte 1 ; reserve 1 byte for counter of Task_3
+
+LeftToggled: .byte 1
+RightToggled: .byte 1
 /*  ************ Instructions on using variables in program memory
 .DSEG 
 var1:  .BYTE 1 ; reserve 1 byte to var1 
@@ -676,7 +679,63 @@ ADCF0:	;Start_Task 	2 	;Turn output indicator pin On
 ;Test ISR
 ;To use, connect P
 IntV1:
-		PushAll
+
+				PushAll
+
+		
+		
+		
+
+		lds r16, LeftToggled; check if left toggle was pressed already
+		cpi r16, 1
+		brne AllowToggleLeft
+		; left Toggle not allowed
+		sbis PIND, PD5 ; Left Broken toggle
+			rjmp CheckRightToggle
+		ldi r16, 0
+		sts LeftToggled, r16
+		rjmp CheckRightToggle
+
+		AllowToggleLeft:
+		sbic PIND, PD5 ; Left Broken toggle
+			rjmp CheckRightToggle
+
+		rcall LeftStatusToggle	;change the state of the left switch
+		ldi r16, 1
+		sts LeftToggled, r16
+		
+
+		CheckRightToggle:
+		
+		lds r16, RightToggled ; check if right toggle was pressed already
+		cpi r16, 1
+		brne AllowToggleRight
+		;Right Toggle not allowed
+		sbis PIND, PD4
+			rjmp ReturnFromIntV1
+
+		ldi r16, 0
+		sts RightToggled, r16
+		PopAll
+		reti
+
+		AllowToggleRight:
+		sbic PIND, PD4; Right Broken toggle
+			rjmp ReturnFromIntV1
+
+		rcall RightStatusToggle ;change the state of the right switch
+		ldi r16, 1
+		sts RightToggled, r16
+		
+		
+
+		ReturnFromIntV1:
+			PopAll
+			reti
+
+
+
+		/*PushAll
 		
 
 		ldi r16, 1
@@ -689,7 +748,7 @@ IntV1:
 
 		PopAll
 		reti
-
+*/
 
 
 ;************ Toggle Normal / Broken state ************* 

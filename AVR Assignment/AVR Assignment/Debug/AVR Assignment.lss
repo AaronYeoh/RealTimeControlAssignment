@@ -1,9 +1,9 @@
 
-AVRASM ver. 2.1.57  E:\RealTimeControlAssignment\AVR Assignment\AVR Assignment\AVR Assignment.asm Wed Sep 16 22:25:36 2015
+AVRASM ver. 2.1.57  E:\RealTimeControlAssignment\AVR Assignment\AVR Assignment\AVR Assignment.asm Wed Sep 16 22:35:54 2015
 
 [builtin](2): Including file 'C:\Program Files (x86)\Atmel\Atmel Toolchain\AVR Assembler\Native\2.1.1175\avrassembler\Include\m8def.inc'
 E:\RealTimeControlAssignment\AVR Assignment\AVR Assignment\AVR Assignment.asm(50): Including file 'C:\Program Files (x86)\Atmel\Atmel Toolchain\AVR Assembler\Native\2.1.1175\avrassembler\Include\m8def.inc'
-E:\RealTimeControlAssignment\AVR Assignment\AVR Assignment\AVR Assignment.asm(107): Including file 'E:\RealTimeControlAssignment\AVR Assignment\AVR Assignment\MECHENG313A.inc'
+E:\RealTimeControlAssignment\AVR Assignment\AVR Assignment\AVR Assignment.asm(110): Including file 'E:\RealTimeControlAssignment\AVR Assignment\AVR Assignment\MECHENG313A.inc'
                  
                  /*
                  
@@ -808,6 +808,9 @@ E:\RealTimeControlAssignment\AVR Assignment\AVR Assignment\AVR Assignment.asm(10
 00006d           TurnOffRightNext: .byte 1
                  
 00006e           PulseCounterSchedule: .byte 1 ; reserve 1 byte for counter of Task_3
+                 
+00006f           LeftToggled: .byte 1
+000070           RightToggled: .byte 1
                  /*  ************ Instructions on using variables in program memory
                  .DSEG 
                  var1:  .BYTE 1 ; reserve 1 byte to var1 
@@ -2030,6 +2033,7 @@ E:\RealTimeControlAssignment\AVR Assignment\AVR Assignment\AVR Assignment.asm(10
                  ;Test ISR
                  ;To use, connect P
                  IntV1:
+                 
 000452 938f
 000453 937f
 000454 936f
@@ -2042,32 +2046,99 @@ E:\RealTimeControlAssignment\AVR Assignment\AVR Assignment\AVR Assignment.asm(10
 00045b 921f
 00045c 920f
 00045d b70f
-00045e 930f      		PushAll
+00045e 930f      				PushAll
+                 
+                 		
+                 		
                  		
                  
-00045f e001      		ldi r16, 1
+00045f 9100 006f 		lds r16, LeftToggled; check if left toggle was pressed already
+000461 3001      		cpi r16, 1
+000462 f431      		brne AllowToggleLeft
+                 		; left Toggle not allowed
+000463 9b85      		sbis PIND, PD5 ; Left Broken toggle
+000464 c00a      			rjmp CheckRightToggle
+000465 e000      		ldi r16, 0
+000466 9300 006f 		sts LeftToggled, r16
+000468 c006      		rjmp CheckRightToggle
+                 
+                 		AllowToggleLeft:
+000469 9985      		sbic PIND, PD5 ; Left Broken toggle
+00046a c004      			rjmp CheckRightToggle
+                 
+00046b d02e      		rcall LeftStatusToggle	;change the state of the left switch
+00046c e001      		ldi r16, 1
+00046d 9300 006f 		sts LeftToggled, r16
                  		
-000460 9b85      		sbis PIND, PD5 ; Left Broken toggle
-000461 d010      		rcall LeftStatusToggle	;change the state of the left switch
                  
-000462 9b84      		sbis PIND, PD4; Right Broken toggle
-000463 d01a      		rcall RightStatusToggle ;change the state of the right switch
+                 		CheckRightToggle:
+                 		
+00046f 9100 0070 		lds r16, RightToggled ; check if right toggle was pressed already
+000471 3001      		cpi r16, 1
+000472 f499      		brne AllowToggleRight
+                 		;Right Toggle not allowed
+000473 9b84      		sbis PIND, PD4
+000474 c017      			rjmp ReturnFromIntV1
                  
-000464 910f
-000465 bf0f
-000466 900f
-000467 901f
-000468 910f
-000469 911f
-00046a 912f
-00046b 913f
-00046c 914f
-00046d 915f
-00046e 916f
-00046f 917f
-000470 918f      		PopAll
-000471 9518      		reti
+000475 e000      		ldi r16, 0
+000476 9300 0070 		sts RightToggled, r16
+000478 910f
+000479 bf0f
+00047a 900f
+00047b 901f
+00047c 910f
+00047d 911f
+00047e 912f
+00047f 913f
+000480 914f
+000481 915f
+000482 916f
+000483 917f
+000484 918f      		PopAll
+000485 9518      		reti
                  
+                 		AllowToggleRight:
+000486 9984      		sbic PIND, PD4; Right Broken toggle
+000487 c004      			rjmp ReturnFromIntV1
+                 
+000488 d01d      		rcall RightStatusToggle ;change the state of the right switch
+000489 e001      		ldi r16, 1
+00048a 9300 0070 		sts RightToggled, r16
+                 		
+                 		
+                 
+                 		ReturnFromIntV1:
+00048c 910f
+00048d bf0f
+00048e 900f
+00048f 901f
+000490 910f
+000491 911f
+000492 912f
+000493 913f
+000494 914f
+000495 915f
+000496 916f
+000497 917f
+000498 918f      			PopAll
+000499 9518      			reti
+                 
+                 
+                 
+                 		/*PushAll
+                 		
+                 
+                 		ldi r16, 1
+                 		
+                 		sbis PIND, PD5 ; Left Broken toggle
+                 		rcall LeftStatusToggle	;change the state of the left switch
+                 
+                 		sbis PIND, PD4; Right Broken toggle
+                 		rcall RightStatusToggle ;change the state of the right switch
+                 
+                 		PopAll
+                 		reti
+                 */
                  
                  
                  ;************ Toggle Normal / Broken state ************* 
@@ -2075,38 +2146,38 @@ E:\RealTimeControlAssignment\AVR Assignment\AVR Assignment\AVR Assignment.asm(10
                  ;Left toggle
                  LeftStatusToggle:
                  		
-000472 9100 0068 		lds r16, LeftBroken
+00049a 9100 0068 		lds r16, LeftBroken
                  
-000474 3001      		cpi r16, 1
-000475 f021      		breq SetLeftTo0
+00049c 3001      		cpi r16, 1
+00049d f021      		breq SetLeftTo0
                  		
-000476 e001      		ldi r16, 1
-000477 9300 0068 		sts LeftBroken, r16
-000479 9508      		ret
+00049e e001      		ldi r16, 1
+00049f 9300 0068 		sts LeftBroken, r16
+0004a1 9508      		ret
                  		
                  		SetLeftTo0:
                  
-00047a e000      		ldi r16, 0
-00047b 9300 0068 		sts LeftBroken, r16
-00047d 9508      		ret
+0004a2 e000      		ldi r16, 0
+0004a3 9300 0068 		sts LeftBroken, r16
+0004a5 9508      		ret
                  
                  ;Right toggle
                  RightStatusToggle:
                  
-00047e 9100 006b 		lds r16, RightBroken
+0004a6 9100 006b 		lds r16, RightBroken
                  
-000480 3001      		cpi r16, 1
-000481 f021      		breq SetRightTo0
+0004a8 3001      		cpi r16, 1
+0004a9 f021      		breq SetRightTo0
                  		
-000482 e001      		ldi r16, 1
-000483 9300 006b 		sts RightBroken, r16
-000485 9508      		ret
+0004aa e001      		ldi r16, 1
+0004ab 9300 006b 		sts RightBroken, r16
+0004ad 9508      		ret
                  		
                  		SetRightTo0:
                  
-000486 e000      		ldi r16, 0
-000487 9300 006b 		sts RightBroken, r16
-000489 9508      		ret
+0004ae e000      		ldi r16, 0
+0004af 9300 006b 		sts RightBroken, r16
+0004b1 9508      		ret
 
 
 RESOURCE USE INFORMATION
@@ -2124,10 +2195,10 @@ counted separately from r26..r31 here.
 .dseg memory usage only counts static data declared with .byte
 
 "ATmega8" register use summary:
-r0 :  50 r1 :  45 r2 :  41 r3 :   0 r4 :   5 r5 :   4 r6 :   0 r7 :   0 
+r0 :  51 r1 :  46 r2 :  41 r3 :   0 r4 :   5 r5 :   4 r6 :   0 r7 :   0 
 r8 :   0 r9 :   0 r10:   0 r11:   0 r12:   0 r13:   0 r14:   0 r15:   0 
-r16: 141 r17:  57 r18:  55 r19:  60 r20:  64 r21:  42 r22:  53 r23:  45 
-r24:  21 r25:   2 r26:   0 r27:   0 r28:   0 r29:   0 r30:   6 r31:   3 
+r16: 155 r17:  58 r18:  56 r19:  61 r20:  65 r21:  43 r22:  54 r23:  46 
+r24:  22 r25:   2 r26:   0 r27:   0 r28:   0 r29:   0 r30:   6 r31:   3 
 x  :   0 y  :   0 z  :   3 
 Registers used: 18 out of 35 (51.4%)
 
@@ -2135,29 +2206,29 @@ Registers used: 18 out of 35 (51.4%)
 .lds  :   0 .sts  :   0 adc   :  48 add   :  28 adiw  :   0 and   :   0 
 andi  :   0 asr   :   0 bclr  :   0 bld   :   0 brbc  :   0 brbs  :   0 
 brcc  :   2 brcs  :   0 breq  :   3 brge  :   0 brhc  :   0 brhs  :   0 
-brid  :   0 brie  :   0 brlo  :   0 brlt  :   0 brmi  :   0 brne  :   3 
+brid  :   0 brie  :   0 brlo  :   0 brlt  :   0 brmi  :   0 brne  :   5 
 brpl  :   0 brsh  :   1 brtc  :   0 brts  :   0 brvc  :   0 brvs  :   0 
 bset  :   0 bst   :   0 cbi   :   4 cbr   :   0 clc   :   2 clh   :   0 
 cli   :   0 cln   :   0 clr   :  26 cls   :   0 clt   :   0 clv   :   0 
-clz   :   0 com   :   0 cp    :   1 cpc   :   0 cpi   :   4 cpse  :   0 
+clz   :   0 com   :   0 cp    :   1 cpc   :   0 cpi   :   6 cpse  :   0 
 dec   :   2 eor   :   0 fmul  :   3 fmuls :   3 fmulsu:   6 icall :   0 
-ijmp  :   0 in    :  12 inc   :   1 ld    :   0 ldd   :   0 ldi   :  49 
-lds   :  12 lpm   :   6 lsl   :   0 lsr   :   0 mov   :   9 movw  :   9 
+ijmp  :   0 in    :  12 inc   :   1 ld    :   0 ldd   :   0 ldi   :  52 
+lds   :  14 lpm   :   6 lsl   :   0 lsr   :   0 mov   :   9 movw  :   9 
 mul   :  14 muls  :   3 mulsu :   6 neg   :   0 nop   :   0 or    :   4 
-ori   :   0 out   :  26 pop   : 109 push  :  73 rcall :  12 ret   :  19 
-reti  :   7 rjmp  :  25 rol   :   8 ror   :   0 sbc   :  14 sbci  :   0 
-sbi   :  12 sbic  :   3 sbis  :   4 sbiw  :   0 sbr   :  12 sbrc  :  12 
+ori   :   0 out   :  27 pop   : 121 push  :  73 rcall :  12 ret   :  19 
+reti  :   8 rjmp  :  30 rol   :   8 ror   :   0 sbc   :  14 sbci  :   0 
+sbi   :  12 sbic  :   5 sbis  :   4 sbiw  :   0 sbr   :  12 sbrc  :  12 
 sbrs  :   4 sec   :   2 seh   :   0 sei   :   4 sen   :   0 ser   :   0 
 ses   :   0 set   :   0 sev   :   0 sez   :   0 sleep :   0 spm   :   0 
-st    :   0 std   :   0 sts   :  17 sub   :   5 subi  :   0 swap  :   0 
+st    :   0 std   :   0 sts   :  21 sub   :   5 subi  :   0 swap  :   0 
 tst   :   0 wdr   :   0 
 Instructions used: 45 out of 110 (40.9%)
 
 "ATmega8" memory use summary [bytes]:
 Segment   Begin    End      Code   Data   Used    Size   Use%
 ---------------------------------------------------------------
-[.cseg] 0x000000 0x000914   1310     24   1334    8192  16.3%
-[.dseg] 0x000060 0x00006f      0      8      8    1024   0.8%
+[.cseg] 0x000000 0x000964   1390     24   1414    8192  17.3%
+[.dseg] 0x000060 0x000071      0     10     10    1024   1.0%
 [.eseg] 0x000000 0x000000      0      0      0     512   0.0%
 
 Assembly complete, 0 errors, 0 warnings

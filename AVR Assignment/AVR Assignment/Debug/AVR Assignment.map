@@ -1,5 +1,5 @@
 
-AVRASM ver. 2.1.57  E:\RealTimeControlAssignment\AVR Assignment\AVR Assignment\AVR Assignment.asm Wed Sep 16 22:25:36 2015
+AVRASM ver. 2.1.57  E:\RealTimeControlAssignment\AVR Assignment\AVR Assignment\AVR Assignment.asm Wed Sep 16 22:35:54 2015
 
 
 EQU  SIGNATURE_000 0000001e
@@ -515,6 +515,8 @@ DSEG RightBroken  0000006b
 DSEG TurnOnRightNext 0000006c
 DSEG TurnOffRightNext 0000006d
 DSEG PulseCounterSchedule 0000006e
+DSEG LeftToggled  0000006f
+DSEG RightToggled 00000070
 CSEG Main         000002b1
 CSEG IntV0        000003ec
 CSEG ADCF0        0000041a
@@ -558,7 +560,11 @@ CSEG TurnOffRightLater 0000035d
 CSEG SetToOne     000003db
 CSEG door_shut    0000040b
 CSEG collision    00000443
-CSEG LeftStatusToggle 00000472
-CSEG RightStatusToggle 0000047e
-CSEG SetLeftTo0   0000047a
-CSEG SetRightTo0  00000486
+CSEG AllowToggleLeft 00000469
+CSEG CheckRightToggle 0000046f
+CSEG LeftStatusToggle 0000049a
+CSEG AllowToggleRight 00000486
+CSEG ReturnFromIntV1 0000048c
+CSEG RightStatusToggle 000004a6
+CSEG SetLeftTo0   000004a2
+CSEG SetRightTo0  000004ae
