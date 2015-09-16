@@ -199,7 +199,10 @@ Main:
 		ldi r16 , 1
 		sts PulseCounterSchedule, r16
 		sts PulseWidth, r16
-		
+
+		ldi r16, 0
+		sts LeftBroken, r16
+		sts RightBroken, r16
 
 		sei ; enable interrupts
 
@@ -648,6 +651,9 @@ ADCF0:	;Start_Task 	2 	;Turn output indicator pin On
 		PushAll
 		;********* Write Task  here ********
 
+		lds r16, FuelInjRunning
+		sbrc r16, 0
+		rjmp RetADC
 	
 
 		in r22, ADCL
@@ -681,7 +687,7 @@ ADCF0:	;Start_Task 	2 	;Turn output indicator pin On
 		collision:
 		cbi PORTB, PB4 ;Collision has occurred. Turn on LED at PB4 by clearing the bit
 		
-		
+		RetADC:
 		PopAll		
 		RETI
 		
