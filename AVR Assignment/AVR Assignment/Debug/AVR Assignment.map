@@ -1,5 +1,5 @@
 
-AVRASM ver. 2.1.57  E:\RealTimeControlAssignment\AVR Assignment\AVR Assignment\AVR Assignment.asm Wed Sep 16 22:35:54 2015
+AVRASM ver. 2.1.57  E:\RealTimeControlAssignment\AVR Assignment\AVR Assignment\AVR Assignment.asm Thu Sep 17 10:48:42 2015
 
 
 EQU  SIGNATURE_000 0000001e
@@ -508,18 +508,20 @@ EQU  TWIaddr      00000011
 EQU  SPMRaddr     00000012
 EQU  INT_VECTORS_SIZE 00000013
 DSEG PulseWidth   00000067
-DSEG LeftBroken   00000068
-DSEG TurnOnLeftNext 00000069
-DSEG TurnOffLeftNext 0000006a
-DSEG RightBroken  0000006b
-DSEG TurnOnRightNext 0000006c
-DSEG TurnOffRightNext 0000006d
-DSEG PulseCounterSchedule 0000006e
+DSEG PulseCounterSchedule 00000068
+DSEG LeftBroken   00000069
+DSEG TurnOnLeftNext 0000006a
+DSEG TurnOffLeftNext 0000006b
+DSEG RightBroken  0000006c
+DSEG TurnOnRightNext 0000006d
+DSEG TurnOffRightNext 0000006e
 DSEG LeftToggled  0000006f
 DSEG RightToggled 00000070
+DSEG FuelInjRunning 00000071
+DSEG IndicatorRunning 00000072
 CSEG Main         000002b1
-CSEG IntV0        000003ec
-CSEG ADCF0        0000041a
+CSEG IntV0        000003e5
+CSEG ADCF0        00000413
 CSEG ClockTick    000002dc
 CSEG ClockTickLeftRight 00000308
 CSEG RPMLoad_Lookup 00000100
@@ -545,7 +547,7 @@ EQU  ClockTick_Task 00000000
 EQU  UpTime       ffffffff
 CSEG System_Monitor 000002ae
 CSEG forever      000002db
-CSEG IntV1        00000452
+CSEG IntV1        0000044b
 CSEG SkipTask     000002f6
 CSEG Task_3       0000038a
 CSEG MonitorTask  0000036e
@@ -557,14 +559,15 @@ CSEG RightLEDON   00000351
 CSEG BeforeRet    00000360
 CSEG TurnOnRightLater 0000034d
 CSEG TurnOffRightLater 0000035d
-CSEG SetToOne     000003db
-CSEG door_shut    0000040b
-CSEG collision    00000443
-CSEG AllowToggleLeft 00000469
-CSEG CheckRightToggle 0000046f
-CSEG LeftStatusToggle 0000049a
-CSEG AllowToggleRight 00000486
-CSEG ReturnFromIntV1 0000048c
-CSEG RightStatusToggle 000004a6
-CSEG SetLeftTo0   000004a2
-CSEG SetRightTo0  000004ae
+CSEG SetToOne     000003d1
+CSEG RetFuelInj   000003d4
+CSEG door_shut    00000404
+CSEG collision    0000043c
+CSEG AllowToggleLeft 00000462
+CSEG CheckRightToggle 00000468
+CSEG LeftStatusToggle 00000493
+CSEG AllowToggleRight 0000047f
+CSEG ReturnFromIntV1 00000485
+CSEG RightStatusToggle 0000049f
+CSEG SetLeftTo0   0000049b
+CSEG SetRightTo0  000004a7

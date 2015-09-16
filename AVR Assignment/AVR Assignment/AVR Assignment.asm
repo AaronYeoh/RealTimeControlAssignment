@@ -52,21 +52,29 @@
 
 .dseg 						; Start data segment
 .org 0x67 					; Set SRAM address to hex 67
-;CounterSchedule: .byte 1 ; Reserve a byte at SRAM for CounterSchedule
+
 PulseWidth: .byte 1 
+PulseCounterSchedule: .byte 1 ; reserve 1 byte for counter of Task_3
 
 LeftBroken: .byte 1
 TurnOnLeftNext: .byte 1
 TurnOffLeftNext: .byte 1
-RightBroken: .byte 1
 
+RightBroken: .byte 1
 TurnOnRightNext: .byte 1
 TurnOffRightNext: .byte 1
 
-PulseCounterSchedule: .byte 1 ; reserve 1 byte for counter of Task_3
-
 LeftToggled: .byte 1
 RightToggled: .byte 1
+
+
+;Flags for piorities
+
+
+FuelInjRunning: .byte 1 ; 0x71
+IndicatorRunning: .byte 1
+
+
 /*  ************ Instructions on using variables in program memory
 .DSEG 
 var1:  .BYTE 1 ; reserve 1 byte to var1 
@@ -277,6 +285,7 @@ ClockTickLeftRight:
 		;********* Write ClockTick Code here ********
 		;LEFT
 
+
 		
 		;When LeftLED is OFF 
 		sbis PORTB, PB1 ;Skip if Left is off (PB0 == 1)
@@ -480,6 +489,8 @@ MonitorTask:
 Task_3:	;Start_Task 	3	;Turn output indicator pin On
 		PushAll
 		
+		ldi r16, 1
+		sts FuelInjRunning, r16
 
 		ldi ZH, high(RPMLoad_Lookup<<1)
 		ldi ZL, low(RPMLoad_Lookup<<1)
@@ -583,15 +594,20 @@ Task_3:	;Start_Task 	3	;Turn output indicator pin On
 		 ;error check if PulseWidth is 0, if true then branch to set it to 1, otherwise do nothing
 		 cpi r22, 0
 		 breq SetToOne
-		 PopAll
-		 ret
-
+		 
+		 rjmp RetFuelInj
+		
 
 		 SetToOne:
 		 ldi r22, 1
 		 sts PulseWidth, r22
 		 
 		; End_Task	3	;Turn output indicator pin Off
+
+		RetFuelInj:
+		ldi r16, 0
+		sts FuelInjRunning, r16
+
 		PopAll
 		RET
 ;***************** End Task3 **********************
@@ -631,6 +647,9 @@ IntV0:
 ADCF0:	;Start_Task 	2 	;Turn output indicator pin On
 		PushAll
 		;********* Write Task  here ********
+
+	
+
 		in r22, ADCL
 		in r23, ADCH
 		clr r20
@@ -654,12 +673,15 @@ ADCF0:	;Start_Task 	2 	;Turn output indicator pin On
 		cpi r20, 4
 		brsh collision
 		sbi PORTB, PB4 ;Collision has NOT occurred. Turn off LED at PB4 by setting the bit
+		
 		PopAll		
 		RETI
 
 
 		collision:
 		cbi PORTB, PB4 ;Collision has occurred. Turn on LED at PB4 by clearing the bit
+		
+		
 		PopAll		
 		RETI
 		
