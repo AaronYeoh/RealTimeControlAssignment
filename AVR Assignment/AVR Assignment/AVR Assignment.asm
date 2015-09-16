@@ -9,6 +9,36 @@
  *   Authors: xwan572 & ayeo722
  */ 
 
+ ;************push and pop potential register used****************
+/*.MACRO PopAll
+	pop r16
+	pop r17
+	pop r18
+	pop r19
+	pop r20
+	pop r21
+	pop r22
+	pop r23
+	pop r24
+
+.ENDMACRO
+
+
+
+.MACRO PushAll
+	push r24
+	push r23
+	push r22
+	push r21
+	push r20
+	push r19
+	push r18
+	push r17
+	push r16
+
+.ENDMACRO*/
+;************end push and pop****************
+
 
 .nolist						;Turn listfile generation Off
 .include "m8def.inc"		;All defines(Ports, Interrupt Table, etc...) needed for the Atmega8
@@ -27,7 +57,7 @@ RightBroken: .byte 1
 TurnOnRightNext: .byte 1
 TurnOffRightNext: .byte 1
 
-FuelInjRunning: .byte 1
+FuelInjRunning: .byte 1 ; 0x6E
 LeftRightInterrupted: .byte 1
 CarDoorInterrupted: .byte 1
 IndicatorRunning: .byte 1
@@ -58,10 +88,10 @@ ld r1,Z ; Load VAR1 into register 1
 ;		rjmp IntV1			;INT vector - for toggling the light state
 .org ADCCaddr
 		rjmp ADCF0
-.org OVF0addr				;Setting Origin Address
-		rjmp ClockTick 		;ClockTick vector
-.org OVF1addr				;Setting Origin Address
-		rjmp ClockTickLeftRight 		;ClockTick vector
+;.org OVF0addr				;Setting Origin Address
+;		rjmp ClockTick 		;ClockTick vector
+;.org OVF1addr				;Setting Origin Address
+;		rjmp ClockTickLeftRight 		;ClockTick vector
 
 ;.cseg
 .org   0x0100               ;table address engine speed (RPM) and load
@@ -178,7 +208,7 @@ Main:
 forever:
 		;Start_Task 1
 		;rcall MonitorTask
-		nop
+		rcall Task_3
 		;End_Task 1
 		rjmp forever 
 ;*****************End of program *****************
@@ -196,6 +226,7 @@ forever:
 ;***************** Clock Tick Interrupt Service Routine *****************
 ClockTick:
 		;Start_Task 	ClockTick_Task	;Turn output indicator pin On
+		rcall PushAll
 		sei		;Enable interrupts!!!
 
 		;********* Write ClockTick Code here ********
@@ -233,6 +264,7 @@ ClockTick:
 		rcall MonitorTask
 
 		;End_Task	ClockTick_Task	;Turn output indicator pin Off
+		rcall PopAll
 		RETI						;Return from Interurpt
 
 
@@ -240,7 +272,7 @@ ClockTick:
 
 ;***************** Clock Tick Interrupt Service Routine *****************
 ClockTickLeftRight:
-		push r16
+		rcall PushAll
 		;If the fuel injection code was running:
 		lds r16, FuelInjRunning
 		ldi r17, 1
@@ -402,11 +434,11 @@ ClockTickLeftRight:
 		 ; Car door callback
 		 lds r16, CarDoorInterrupted
 		 sbrc r16, 0
-		 rcall RunCarDoor
+		 rcall IntV0
 		 
 		 lds r16, 0
 		 sts CarDoorInterrupted, r16 ; clear the flag
-		 pop r16
+		 rcall PopAll
 		 reti
 
 
@@ -431,6 +463,7 @@ ClockTickLeftRight:
 
 
 MonitorTask:
+		rcall PushAll
 		in r22, ADCL
 		
 		;Treat r18 (ADCL) as Fahrenheit and convert to celcius
@@ -484,13 +517,14 @@ MonitorTask:
 		
 		pop r22
 
+		rcall PopAll
 		RET
 
 
 ;***************** Start of Task3 *****************
 Task_3:	;Start_Task 	3	;Turn output indicator pin On
 		
-		push r16
+		rcall PushAll
 		
 		;Allow ONLY the Collision code to interrupt this
 		ldi r16, 1
@@ -589,13 +623,43 @@ Task_3:	;Start_Task 	3	;Turn output indicator pin On
 		 clr r21;
 		 clr r20;
 		 ;Finally we divide by 40
+		 clr r16
+		 clr r0
 		 rcall div24x24_24 ;r24:r23:r22 = r24:r23:r22 / r21:r20:r19
 		 
-		 ldi r19,2
+		 ;Workaround: If r22 == 255, set r22 = 1
+		/* cpi r24, 1
+		 brsh HandleOverflow
+		 rjmp NoOverflow
+		 HandleOverflow:
+		 ldi r22, 1
+		 clr r23
+		 clr r24
 
+		 NoOverflow: 
+		 ldi r19,2
+		 clr r16
+		 clr r17
+		 clr r18*/
+		 
+		 
 		 rcall div24x24_24 ;r24:r23:r22 = r24:r23:r22 / r21:r20:r19
+		 
+		 ;Workaround: If r22 == 255, set r22 = 1
+/*		 cpi r24, 1
+		 brsh HandleOverflow2
+		 rjmp NoOverflow2
+		 HandleOverflow2:
+		 ldi r22, 1
+		 clr r23
+		 clr r24
+
+		 NoOverflow2: */
 
 		 sts PulseWidth, r22
+/*		 clr r16
+		 clr r17
+		 clr r18*/
 
 		 
 		 ;error check if PulseWidth is 0, if true then branch to set it to 1, otherwise do nothing
@@ -625,7 +689,7 @@ Task_3:	;Start_Task 	3	;Turn output indicator pin On
 		 ; Car door callback
 		 lds r16, CarDoorInterrupted
 		 sbrc r16, 0
-		 rcall RunCarDoor
+		 rcall IntV0
 		 
 		 lds r16, 0
 		 sts CarDoorInterrupted, r16 ; clear the flag
@@ -635,7 +699,7 @@ Task_3:	;Start_Task 	3	;Turn output indicator pin On
 
 		 ;********* End Interrupt callback ***************
 
-		 pop r16
+		 rcall PopAll
 
 
 
@@ -650,8 +714,7 @@ Task_3:	;Start_Task 	3	;Turn output indicator pin On
 ; DOOR OPEN LIGHT LED PB4
 
 IntV0:
-		push r16
-		push r17
+		rcall PushAll
 		;If the fuel injection code was running:
 		lds r16, FuelInjRunning
 		lds r17, IndicatorRunning
@@ -662,8 +725,7 @@ IntV0:
 		ldi r16, 1
 		sts CarDoorInterrupted, r16
 
-		pop r17
-		pop r16
+		rcall PopAll
 		reti
 
 		;Allow collision to interrupt, disallow door code to interrupt
@@ -684,16 +746,14 @@ IntV0:
 		;if door was open (PB4 == 0), it is shut now
 		
 		sbi PORTB, PB2  ;SET the door LED - LED is OFF
-		pop r17
-		pop r16
+		rcall PopAll
 		RETI			;Return from Interurpt
 
 		door_shut:
 		;if door was shut, we set it as open
 		cbi PORTB, PB2	;Clear the door LED - LED is ON 
 
-		pop r17
-		pop r16
+		rcall PopAll
 		RETI			;Return from Interurpt
 ;***************** End External Interrupt **********************
 
@@ -702,7 +762,7 @@ IntV0:
 
 ;***************** Collision Detection*****************
 ADCF0:	;Start_Task 	2 	;Turn output indicator pin On
-		
+		rcall PushAll
 		;********* Write Task  here ********
 		in r22, ADCL
 		in r23, ADCH
@@ -727,13 +787,15 @@ ADCF0:	;Start_Task 	2 	;Turn output indicator pin On
 		cpi r20, 4
 		brsh collision
 		sbi PORTB, PB4 ;Collision has NOT occurred. Turn off LED at PB4 by setting the bit
-				
+			
+		rcall PopAll		
 		RETI
 
 
 		collision:
 		cbi PORTB, PB4 ;Collision has occurred. Turn on LED at PB4 by clearing the bit
-				
+			
+		rcall PopAll	
 		RETI
 		
 		;end of collision
@@ -742,13 +804,12 @@ ADCF0:	;Start_Task 	2 	;Turn output indicator pin On
 		;************************************
 		
 		;End_Task	2	;Turn output indicator pin Off
-		RETI
 ;***************** End Task1 **********************
 
 
 ;To use, connect P
 IntV1:
-		push r16
+		rcall PushAll
 
 		
 		
@@ -784,7 +845,7 @@ IntV1:
 
 		ldi r16, 0
 		sts RightToggled, r16
-		pop r16
+		rcall PopAll
 		reti
 
 		AllowToggleRight:
@@ -798,7 +859,7 @@ IntV1:
 		
 
 		ReturnFromIntV1:
-			pop r16
+			rcall PopAll
 			reti
 
 ;************ Toggle Normal / Broken state ************* 
@@ -841,8 +902,8 @@ RightStatusToggle:
 ;**************** end ******************
 
 
-;************push and pop potential register used****************
-.MACRO PopAll
+ ;************push and pop potential register used****************
+PopAll:
 	pop r16
 	pop r17
 	pop r18
@@ -850,19 +911,23 @@ RightStatusToggle:
 	pop r20
 	pop r21
 	pop r22
+	pop r23
+	pop r24
 
-.ENDMACRO
+	ret
 
 
 
-.MACRO PushAll
+PushAll:
+	push r24
+	push r23
 	push r22
 	push r21
 	push r20
-	push r18
 	push r19
+	push r18
 	push r17
 	push r16
 
-.ENDMACRO
+	ret
 ;************end push and pop****************
