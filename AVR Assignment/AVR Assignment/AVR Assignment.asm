@@ -27,11 +27,6 @@ RightBroken: .byte 1
 TurnOnRightNext: .byte 1
 TurnOffRightNext: .byte 1
 
-FuelInjRunning: .byte 1
-LeftRightInterrupted: .byte 1
-CarDoorInterrupted: .byte 1
-IndicatorRunning: .byte 1
-
 PulseCounterSchedule: .byte 1 ; reserve 1 byte for counter of Task_3
 /*  ************ Instructions on using variables in program memory
 .DSEG 
@@ -157,11 +152,7 @@ Main:
 		ldi r16 , 1
 		sts PulseCounterSchedule, r16
 		sts PulseWidth, r16
-
-
-		ldi r16, 0
-		sts CarDoorInterrupted, r16
-		sts FuelInjRunning, r16
+		
 
 		sei ; enable interrupts
 
@@ -230,34 +221,8 @@ ClockTick:
 
 ;***************** Clock Tick Interrupt Service Routine *****************
 ClockTickLeftRight:
-		push r16
-		;If the fuel injection code was running:
-		lds r16, FuelInjRunning
-		ldi r17, 1
-		cpse r16, r17 ;Compare skip if equal
-			rjmp RunLeftRight
-		ldi r16, 1
-		sts LeftRightInterrupted, r16
-
-		reti
-
-		;Allow collision to interrupt, disallow door code to interrupt
 		
-
-		RunLeftRight:
-		;Not interrupted
 		sei		;Enable interrupts!!!
-
-		ldi r16, 0
-		sts LeftRightInterrupted, r16
-		
-		ldi r16, 1
-		sts IndicatorRunning, r16
-		
-		
-		
-		;****************** Code for this interrupt below **********
-
 		
 				;to get 0.25ms per interrupt, TCNT1 = 34286 = $85EE
 		ldi	r16, $EE			; MaxValue = TOVck (1.5ms or your Cal time) * Pck (1MHz) / 8 (prescaler)
@@ -350,7 +315,7 @@ ClockTickLeftRight:
 					ldi r16, 0
 					sts TurnOnRightNext, r16
 
-					rjmp CarDoorCallback 
+					reti
 
 				;Not Broken or TOLN
 				TurnOnRightLater:
@@ -359,7 +324,7 @@ ClockTickLeftRight:
 					sts TurnOnRightNext, r16
 					;Do nothing
 					
-					rjmp CarDoorCallback
+					reti
 			
 
 		RightLEDON:
@@ -376,7 +341,7 @@ ClockTickLeftRight:
 				ldi r16, 0
 				sts TurnOffRightNext, r16	;TurnOffRightNext = false
 
-				rjmp CarDoorCallback
+				reti
 			
 			;Not Broken or TOLN
 			TurnOffRightLater:
@@ -386,15 +351,10 @@ ClockTickLeftRight:
 				;Do nothing
 
 
-		CarDoorCallback:
-		 ; Car door callback
-		 lds r16, CarDoorInterrupted
-		 sbrc r16, 0
-		 rcall RunCarDoor
-		 
-		 lds r16, 0
-		 sts CarDoorInterrupted, r16 ; clear the flag
-		 reti
+
+				
+		
+		RETI						;Return from Interurpt
 
 
 ; ASYNC CODE
@@ -477,13 +437,7 @@ MonitorTask:
 ;***************** Start of Task3 *****************
 Task_3:	;Start_Task 	3	;Turn output indicator pin On
 		
-		push r16
-		
-		;Allow ONLY the Collision code to interrupt this
-		ldi r16, 1
-		sts FuelInjRunning, r16
-
-		sei 
+		 push r16
 
 		ldi ZH, high(RPMLoad_Lookup<<1)
 		ldi ZL, low(RPMLoad_Lookup<<1)
@@ -589,44 +543,13 @@ Task_3:	;Start_Task 	3	;Turn output indicator pin On
 		 ;error check if PulseWidth is 0, if true then branch to set it to 1, otherwise do nothing
 		 cpi r22, 0
 		 breq SetToOne
-		 rjmp NoSetToOne
+		 ret
+
 
 		 SetToOne:
 		 ldi r22, 1
 		 sts PulseWidth, r22
 		 
-		 NoSetToOne:
-		 ;Clear the FuelInjRunning flag
-		 ldi r16, 0
-		 sts FuelInjRunning, r16 
-
-		 ;********* Interrupt callback ***************
-		 ;If the left right indicator was interrupted, run it
-		 lds r16, LeftRightInterrupted
-		 sbrc r16, 0
-		 rcall ClockTickLeftRight
-		 
-		 lds r16, 0
-		 sts LeftRightInterrupted, r16 ; clear the flag
-
-
-		 ; Car door callback
-		 lds r16, CarDoorInterrupted
-		 sbrc r16, 0
-		 rcall RunCarDoor
-		 
-		 lds r16, 0
-		 sts CarDoorInterrupted, r16 ; clear the flag
-		 
-
-
-
-		 ;********* End Interrupt callback ***************
-
-		 pop r16
-
-
-
 		; End_Task	3	;Turn output indicator pin Off
 		RET
 ;***************** End Task3 **********************
@@ -639,29 +562,7 @@ Task_3:	;Start_Task 	3	;Turn output indicator pin On
 
 IntV0:
 		push r16
-		push r17
-		;If the fuel injection code was running:
-		lds r16, FuelInjRunning
-		lds r17, IndicatorRunning
-		or r16, r17
-		ldi r17, 1
-		cpse r16, r17 ;Compare skip if equal
-			rjmp RunCarDoor
-		ldi r16, 1
-		sts CarDoorInterrupted, r16
-
-		reti
-
-		;Allow collision to interrupt, disallow door code to interrupt
-		
-
-		RunCarDoor:
-		;Not interrupted
-		ldi r16, 0
-		sts CarDoorInterrupted, r16
-		sei		;Enable interrupts!!!
-		; ***** Code below
-
+		sei ; Enable interrupts.
 
 		;Check the PB2 bit. If it is set, the door WAS shut (LED off) and it's now open. We want to turn ON the LED. 
 		sbic PORTB, PB2
