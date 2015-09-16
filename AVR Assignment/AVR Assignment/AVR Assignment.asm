@@ -209,7 +209,7 @@ Main:
 		;********* Main infinite loop ********
 forever:
 		;Start_Task 1
-		;rcall MonitorTask
+		;rcall TaskCallback
 		;End_Task 1
 		rjmp forever 
 ;*****************End of program *****************
@@ -231,7 +231,7 @@ ClockTick:
 		sei		;Enable interrupts!!!
 
 		;********* Write ClockTick Code here ********                                                                                                                        
-		ldi	r16, 128				; MaxValue = TOVck (1.5ms or your Cal time) * Pck (1MHz) / 8 (prescaler)
+		ldi	r16, 100				; MaxValue = TOVck (1.5ms or your Cal time) * Pck (1MHz) / 8 (prescaler)
 		out TCNT0, r16			; TCNT0Value = 255 - MaxValue	
 		
 		rcall IntV1
@@ -275,6 +275,14 @@ ClockTick:
 ;***************** Clock Tick Interrupt Service Routine *****************
 ClockTickLeftRight:
 		PushAll
+
+		lds r16, FuelInjRunning
+		sbrc r16, 0
+		rjmp BeforeRet
+
+		ldi r16, 1
+		sts IndicatorRunning, r16
+		 
 		sei		;Enable interrupts!!!
 		
 				;to get 0.25ms per interrupt, TCNT1 = 34286 = $85EE
@@ -407,6 +415,8 @@ ClockTickLeftRight:
 
 
 		BeforeRet:		
+		ldi r16, 0
+		sts IndicatorRunning, r16
 		PopAll
 		RETI						;Return from Interurpt
 
