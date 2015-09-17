@@ -174,8 +174,6 @@ Main:
 		out ADCSRA, r16
 
 
-		;cbi DDRC,PC1		; DELETE ?
-
 		;********* ClockTick 8-bit Timer/Counter 0 *******      
 		ldi r16, (1<<CS01) | (1<< CS00)      ; Start Counter 0      
       	out TCCR0, r16			; Timer Clock = Sys Clock (1MHz) / 64 (prescaler)
@@ -215,17 +213,13 @@ Main:
 
 		ldi r16, 0
 		sts LeftBroken, r16
-		sts RightBroken, r16
-		;sts ToggleRunning, r16
-		
+		sts RightBroken, r16		
 
 		sei ; enable interrupts
 
 		;********* Main infinite loop ********
 forever:
-		;Start_Task 1
 		rcall TaskCallback
-		;End_Task 1
 		rjmp forever 
 ;*****************End of program *****************
 
@@ -267,7 +261,6 @@ IndicatorCallback:
 ;***************** Clock Tick Interrupt Service Routine *****************
 ClockTick:
 		PushAll
-		;Start_Task 	ClockTick_Task	;Turn output indicator pin On
 		sei		;Enable interrupts!!!
 
 		;********* Write ClockTick Code here ********                                                                                                                        
@@ -277,9 +270,6 @@ ClockTick:
 		rcall LightToggleSubroutine 
 		; FuelInjectionTimingTask HARD
 		; Every nth tick, run the timing subroutine
-
-
-		
 		
 		; Every tick, read ADCL and:
 		; convert from fahrenheit to degrees C
@@ -295,17 +285,13 @@ ClockTick:
 		
 		clr r16
 		clr r17
-		
-
 
 		SkipTask:
 		inc r16
 		sts PulseCounterSchedule, r16
 
-
 		rcall MonitorTask
 
-		;End_Task	ClockTick_Task	;Turn output indicator pin Off
 		PopAll
 		RETI						;Return from Interurpt
 
@@ -335,8 +321,6 @@ ClockTickLeftRight:
 
 		;********* Write ClockTick Code here ********
 		;LEFT
-
-
 		
 		;When LeftLED is OFF 
 		sbis PORTB, PB1 ;Skip if Left is off (PB0 == 1)
@@ -470,17 +454,10 @@ ClockTickLeftRight:
 		; Collision DetectionTask HARD - DO NOT SEI 
 		; Use ADCH and ADCL. if > 0011 (3): Turn on an LED.
 		; Else turn off. Optimise: Only read ADCH. If any are 1. Turn on LED
-		
-
 		; CarDoorIndicatorTask SOFT - SEI ON
-		;
-
 		; LeftIndicatorTask FIRM
-
 		; RightIndicatorTask FIRM
-
 		; LeftToggleTask FIRM
-
 		; RightToggleTask FIRM
 
 
@@ -674,7 +651,7 @@ FuelInjTask:	;Start_Task 	3	;Turn output indicator pin On
 
 ;***************** Start of External Interrupt *****************
 ; Car door status switcher ISR - Soft Real Time   ;Done!
-; DOOR OPEN LIGHT LED PB4
+; DOOR OPEN LIGHT LED PB2
 
 IntV0:
 		PushAll
@@ -697,15 +674,12 @@ IntV0:
 		in r16, GICR
 		cbr r16, (1<<INT0)
 		out GICR, r16
-		;Enable counter2 with delay of 0.255s
 		
-
 		ldi r16, (1<<TOV2) ;clear interrupt flag by setting TOV2 to 1 then use OUT 
 		out TIFR, r16
 		sei ; Enable interrupts.
-		;nop 
-		;in r16, TIFR
 		
+		;Enable counter2 with delay of 0.25s
 		in r16, TIMSK
 		sbr r16, (1<<TOIE2)  
 		out TIMSK, r16
@@ -878,10 +852,6 @@ LightToggleSubroutine:
 
 ;Left toggle
 LeftStatusToggle:
-		
-		;ldi r16, 1
-		;sts ToggleRunning, r16
-
 		lds r16, LeftBroken
 
 		cpi r16, 1
@@ -890,27 +860,18 @@ LeftStatusToggle:
 		ldi r16, 1
 		sts LeftBroken, r16
 
-		;ldi r16, 0
-		;sts ToggleRunning, r16
-
 		ret
 		
 		SetLeftTo0:
 
 		ldi r16, 0
 		sts LeftBroken, r16
-		
-		;ldi r16, 0
-		;sts ToggleRunning, r16
-		
+				
 		ret
 
 ;Right toggle
 RightStatusToggle:
 
-		;ldi r16, 1
-		;sts ToggleRunning, r16
-		
 		lds r16, RightBroken
 
 		cpi r16, 1
@@ -919,18 +880,12 @@ RightStatusToggle:
 		ldi r16, 1
 		sts RightBroken, r16
 
-		;ldi r16, 0
-		;sts ToggleRunning, r16
-
 		ret
 		
 		SetRightTo0:
 
 		ldi r16, 0
 		sts RightBroken, r16
-
-		;ldi r16, 0
-		;sts ToggleRunning, r16
 
 		ret
 ;**************** end ******************
