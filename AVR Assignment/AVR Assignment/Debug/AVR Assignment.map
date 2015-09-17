@@ -1,5 +1,5 @@
 
-AVRASM ver. 2.1.57  E:\RealTimeControlAssignment\AVR Assignment\AVR Assignment\AVR Assignment.asm Thu Sep 17 11:01:19 2015
+AVRASM ver. 2.1.57  H:\Documents\RealTimeControlAssignment\AVR Assignment\AVR Assignment\AVR Assignment.asm Thu Sep 17 12:16:55 2015
 
 
 EQU  SIGNATURE_000 0000001e
@@ -519,11 +519,13 @@ DSEG LeftToggled  0000006f
 DSEG RightToggled 00000070
 DSEG FuelInjRunning 00000071
 DSEG IndicatorRunning 00000072
+DSEG DoorStopped  00000073
+DSEG IndicatorStopped 00000074
 CSEG Main         000002b1
-CSEG IntV0        000003ea
-CSEG ADCF0        00000418
-CSEG ClockTick    000002e1
-CSEG ClockTickLeftRight 0000030d
+CSEG IntV0        0000040c
+CSEG ADCF0        00000442
+CSEG ClockTick    000002f5
+CSEG ClockTickLeftRight 00000321
 CSEG RPMLoad_Lookup 00000100
 CSEG FactorA_Lookup 00000108
 CSEG FactorB_Lookup 0000010a
@@ -547,28 +549,34 @@ EQU  ClockTick_Task 00000000
 EQU  UpTime       ffffffff
 CSEG System_Monitor 000002ae
 CSEG forever      000002e0
-CSEG IntV1        00000454
-CSEG SkipTask     000002fb
-CSEG Task_3       0000038f
-CSEG MonitorTask  00000373
-CSEG LeftLEDON    00000333
-CSEG RightLED     00000342
-CSEG TurnOnLeftLater 0000032f
-CSEG TurnOffLeftLater 0000033f
-CSEG RightLEDON   00000356
-CSEG BeforeRet    00000365
-CSEG TurnOnRightLater 00000352
-CSEG TurnOffRightLater 00000362
-CSEG SetToOne     000003d6
-CSEG RetFuelInj   000003d9
-CSEG door_shut    00000409
-CSEG RetADC       00000446
-CSEG collision    00000445
-CSEG AllowToggleLeft 0000046b
-CSEG CheckRightToggle 00000471
-CSEG LeftStatusToggle 0000049c
-CSEG AllowToggleRight 00000488
-CSEG ReturnFromIntV1 0000048e
-CSEG RightStatusToggle 000004a8
-CSEG SetLeftTo0   000004a4
-CSEG SetRightTo0  000004b0
+CSEG TaskCallback 000002e2
+CSEG DoorCallback 000002eb
+CSEG IndicatorCallback 000002f0
+CSEG IntV1        0000047a
+CSEG SkipTask     0000030f
+CSEG Task_3       000003b1
+CSEG MonitorTask  00000395
+CSEG StopIndicator 00000391
+CSEG LeftLEDON    0000034e
+CSEG RightLED     0000035d
+CSEG TurnOnLeftLater 0000034a
+CSEG TurnOffLeftLater 0000035a
+CSEG RightLEDON   00000371
+CSEG BeforeRet    00000380
+CSEG TurnOnRightLater 0000036d
+CSEG TurnOffRightLater 0000037d
+CSEG SetToOne     000003f8
+CSEG RetFuelInj   000003fb
+CSEG StopDoor     0000043e
+CSEG door_shut    0000042f
+CSEG RetDoor      00000430
+CSEG collision    0000046b
+CSEG RetADC       0000046c
+CSEG AllowToggleLeft 00000491
+CSEG CheckRightToggle 00000497
+CSEG LeftStatusToggle 000004c2
+CSEG AllowToggleRight 000004ae
+CSEG ReturnFromIntV1 000004b4
+CSEG RightStatusToggle 000004ce
+CSEG SetLeftTo0   000004ca
+CSEG SetRightTo0  000004d6

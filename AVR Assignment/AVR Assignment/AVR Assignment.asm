@@ -73,6 +73,8 @@ RightToggled: .byte 1
 
 FuelInjRunning: .byte 1 ; 0x71
 IndicatorRunning: .byte 1
+DoorStopped: .byte 1
+IndicatorStopped: .byte 1
 
 
 /*  ************ Instructions on using variables in program memory
@@ -209,17 +211,40 @@ Main:
 		;********* Main infinite loop ********
 forever:
 		;Start_Task 1
-		;rcall TaskCallback
+		rcall TaskCallback
 		;End_Task 1
 		rjmp forever 
 ;*****************End of program *****************
 
 
+;******************Task Callbacks **********************
+TaskCallback:
+	
+		;if either the door open toggle or the LeftRight was prevented from running, call them again
+		
+		lds r16, DoorStopped
+		sbrc r16, 0
+			rcall DoorCallback
+
+		lds r16, IndicatorStopped
+		sbrc r16, 0
+			rcall IndicatorCallback
+
+		ret
+
+DoorCallback:
+		rcall IntV0
+		ldi r16, 0
+		sts DoorStopped, r16
+		ret
 
 
-
-
-
+IndicatorCallback:
+		rcall ClockTickLeftRight
+		ldi r16, 0
+		sts IndicatorStopped, r16
+		ret
+;******************END Task Callbacks **********************
 
 
 
@@ -278,7 +303,7 @@ ClockTickLeftRight:
 
 		lds r16, FuelInjRunning
 		sbrc r16, 0
-		rjmp BeforeRet
+		rjmp StopIndicator
 
 		ldi r16, 1
 		sts IndicatorRunning, r16
@@ -419,6 +444,11 @@ ClockTickLeftRight:
 		sts IndicatorRunning, r16
 		PopAll
 		RETI						;Return from Interurpt
+
+		StopIndicator:
+		ldi r16, 1
+		sts IndicatorStopped, r16
+		rjmp BeforeRet
 
 
 ; ASYNC CODE
@@ -633,6 +663,10 @@ Task_3:	;Start_Task 	3	;Turn output indicator pin On
 
 IntV0:
 		PushAll
+		lds r16, FuelInjRunning
+		sbrc r16, 0
+		rjmp StopDoor
+
 		sei ; Enable interrupts.
 
 		;Check the PB2 bit. If it is set, the door WAS shut (LED off) and it's now open. We want to turn ON the LED. 
@@ -649,8 +683,14 @@ IntV0:
 		;if door was shut, we set it as open
 		cbi PORTB, PB2	;Clear the door LED - LED is ON 
 
+		RetDoor:
 		PopAll
 		RETI			;Return from Interurpt
+
+		StopDoor:
+		ldi r16, 1
+		sts DoorStopped, r16
+		rjmp RetDoor
 ;***************** End External Interrupt **********************
 
 
@@ -661,9 +701,7 @@ ADCF0:	;Start_Task 	2 	;Turn output indicator pin On
 		PushAll
 		;********* Write Task  here ********
 
-		lds r16, FuelInjRunning
-		sbrc r16, 0
-		rjmp RetADC
+		
 	
 
 		in r22, ADCL
@@ -700,6 +738,8 @@ ADCF0:	;Start_Task 	2 	;Turn output indicator pin On
 		RetADC:
 		PopAll		
 		RETI
+		
+
 		
 		;end of collision
 		
