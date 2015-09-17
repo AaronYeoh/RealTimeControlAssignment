@@ -683,6 +683,9 @@ IntV0:
 
 		ldi r16, (1<<TOV2) ;clear interrupt flag by setting TOV2 to 1 then use OUT 
 		out TIFR, r16
+
+		;nop 
+		;in r16, TIFR
 		
 		in r16, TIMSK
 		sbr r16, (1<<TOIE2)  
