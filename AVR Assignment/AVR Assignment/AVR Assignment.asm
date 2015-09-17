@@ -101,9 +101,9 @@ ld r1,Z ; Load VAR1 into register 1
 .org INT0addr				;Setting Origin Address
 		rjmp IntV0 			;INT vector - for toggling the door state
 ;.org INT1addr				;Setting Origin Address
-;		rjmp IntV1			;INT vector - for toggling the light state
+;		rjmp LightToggleSubroutine 			;INT vector - for toggling the light state
 .org ADCCaddr
-		rjmp ADCF0
+		rjmp CollisionTask
 .org OVF0addr				;Setting Origin Address
 		rjmp ClockTick 		;ClockTick vector
 .org OVF1addr				;Setting Origin Address
@@ -274,7 +274,7 @@ ClockTick:
 		ldi	r16, 100				; MaxValue = TOVck (1.5ms or your Cal time) * Pck (1MHz) / 8 (prescaler)
 		out TCNT0, r16			; TCNT0Value = 255 - MaxValue	
 		
-		rcall IntV1
+		rcall LightToggleSubroutine 
 		; FuelInjectionTimingTask HARD
 		; Every nth tick, run the timing subroutine
 
@@ -291,7 +291,7 @@ ClockTick:
 		
 		cp r16, r17
 		brne SkipTask
-		rcall Task_3
+		rcall FuelInjTask
 		
 		clr r16
 		clr r17
@@ -544,7 +544,7 @@ MonitorTask:
 
 
 ;***************** Start of Task3 *****************
-Task_3:	;Start_Task 	3	;Turn output indicator pin On
+FuelInjTask:	;Start_Task 	3	;Turn output indicator pin On
 		PushAll
 		
 		ldi r16, 1
@@ -741,7 +741,7 @@ IntV0:
 
 
 ;***************** Collision Detection*****************
-ADCF0:	;Start_Task 	2 	;Turn output indicator pin On
+CollisionTask:	;Start_Task 	2 	;Turn output indicator pin On
 		PushAll
 		;********* Write Task  here ********
 
@@ -800,7 +800,7 @@ ADCF0:	;Start_Task 	2 	;Turn output indicator pin On
 
 ;Test ISR
 ;To use, connect P
-IntV1:
+LightToggleSubroutine:
 
 		PushAll
 

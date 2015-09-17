@@ -1,9 +1,9 @@
 
-AVRASM ver. 2.1.57  E:\RealTimeControlAssignment\AVR Assignment\AVR Assignment\AVR Assignment.asm Thu Sep 17 18:52:37 2015
+AVRASM ver. 2.1.52  C:\Users\Aaron\Documents\RealTimeControlAssignment\AVR Assignment\AVR Assignment\AVR Assignment.asm Fri Sep 18 01:02:01 2015
 
-[builtin](2): Including file 'C:\Program Files (x86)\Atmel\Atmel Toolchain\AVR Assembler\Native\2.1.1175\avrassembler\Include\m8def.inc'
-E:\RealTimeControlAssignment\AVR Assignment\AVR Assignment\AVR Assignment.asm(50): Including file 'C:\Program Files (x86)\Atmel\Atmel Toolchain\AVR Assembler\Native\2.1.1175\avrassembler\Include\m8def.inc'
-E:\RealTimeControlAssignment\AVR Assignment\AVR Assignment\AVR Assignment.asm(127): Including file 'E:\RealTimeControlAssignment\AVR Assignment\AVR Assignment\MECHENG313A.inc'
+[builtin](2): Including file 'C:\Program Files (x86)\Atmel\Atmel Studio 6.0\extensions\Atmel\AVRAssembler\2.1.51.64\AvrAssembler/Include\m8def.inc'
+C:\Users\Aaron\Documents\RealTimeControlAssignment\AVR Assignment\AVR Assignment\AVR Assignment.asm(50): Including file 'C:\Program Files (x86)\Atmel\Atmel Studio 6.0\extensions\Atmel\AVRAssembler\2.1.51.64\AvrAssembler/Include\m8def.inc'
+C:\Users\Aaron\Documents\RealTimeControlAssignment\AVR Assignment\AVR Assignment\AVR Assignment.asm(127): Including file 'C:\Users\Aaron\Documents\RealTimeControlAssignment\AVR Assignment\AVR Assignment\MECHENG313A.inc'
                  
                  /*
                  
@@ -845,9 +845,9 @@ E:\RealTimeControlAssignment\AVR Assignment\AVR Assignment\AVR Assignment.asm(12
                  .org INT0addr				;Setting Origin Address
 000001 c40c      		rjmp IntV0 			;INT vector - for toggling the door state
                  ;.org INT1addr				;Setting Origin Address
-                 ;		rjmp IntV1			;INT vector - for toggling the light state
+                 ;		rjmp LightToggleSubroutine 			;INT vector - for toggling the light state
                  .org ADCCaddr
-00000e c44a      		rjmp ADCF0
+00000e c44a      		rjmp CollisionTask
                  .org OVF0addr				;Setting Origin Address
 000009 c2ed      		rjmp ClockTick 		;ClockTick vector
                  .org OVF1addr				;Setting Origin Address
@@ -1484,7 +1484,7 @@ E:\RealTimeControlAssignment\AVR Assignment\AVR Assignment\AVR Assignment.asm(12
 000305 e604      		ldi	r16, 100				; MaxValue = TOVck (1.5ms or your Cal time) * Pck (1MHz) / 8 (prescaler)
 000306 bf02      		out TCNT0, r16			; TCNT0Value = 255 - MaxValue	
                  		
-000307 d189      		rcall IntV1
+000307 d189      		rcall LightToggleSubroutine 
                  		; FuelInjectionTimingTask HARD
                  		; Every nth tick, run the timing subroutine
                  
@@ -1501,7 +1501,7 @@ E:\RealTimeControlAssignment\AVR Assignment\AVR Assignment\AVR Assignment.asm(12
                  		
 00030c 1701      		cp r16, r17
 00030d f419      		brne SkipTask
-00030e d0a4      		rcall Task_3
+00030e d0a4      		rcall FuelInjTask
                  		
 00030f 2700      		clr r16
 000310 2711      		clr r17
@@ -1790,7 +1790,7 @@ E:\RealTimeControlAssignment\AVR Assignment\AVR Assignment\AVR Assignment.asm(12
                  
                  
                  ;***************** Start of Task3 *****************
-                 Task_3:	;Start_Task 	3	;Turn output indicator pin On
+                 FuelInjTask:	;Start_Task 	3	;Turn output indicator pin On
 0003b3 938f
 0003b4 937f
 0003b5 936f
@@ -2047,7 +2047,7 @@ E:\RealTimeControlAssignment\AVR Assignment\AVR Assignment\AVR Assignment.asm(12
                  
                  
                  ;***************** Collision Detection*****************
-                 ADCF0:	;Start_Task 	2 	;Turn output indicator pin On
+                 CollisionTask:	;Start_Task 	2 	;Turn output indicator pin On
 000459 938f
 00045a 937f
 00045b 936f
@@ -2142,7 +2142,7 @@ E:\RealTimeControlAssignment\AVR Assignment\AVR Assignment\AVR Assignment.asm(12
                  
                  ;Test ISR
                  ;To use, connect P
-                 IntV1:
+                 LightToggleSubroutine:
                  
 000491 938f
 000492 937f
@@ -2319,7 +2319,7 @@ E:\RealTimeControlAssignment\AVR Assignment\AVR Assignment\AVR Assignment.asm(12
 0004f6 930f      	PushAll
                  
 0004f7 9100 0076 		lds r16, DebounceTicks
-0004f9 3001      		cpi r16, 1 ;if debounceticks == 1. run code below. Delay by 0.75secs
+0004f9 3001      		cpi r16, 1 ;if debounceticks == 1. run code below. Delay by 0.25secs
 0004fa f449      		brne ContinueCounting
                  
 0004fb e400      		ldi r16, (1<<INTF0) ;clear interrupt flag by setting INTF0 to 1 then use OUT 

@@ -1,5 +1,5 @@
 
-AVRASM ver. 2.1.57  E:\RealTimeControlAssignment\AVR Assignment\AVR Assignment\AVR Assignment.asm Thu Sep 17 18:52:37 2015
+AVRASM ver. 2.1.52  C:\Users\Aaron\Documents\RealTimeControlAssignment\AVR Assignment\AVR Assignment\AVR Assignment.asm Fri Sep 18 01:02:01 2015
 
 
 EQU  SIGNATURE_000 0000001e
@@ -525,7 +525,7 @@ DSEG ToggleRunning 00000075
 DSEG DebounceTicks 00000076
 CSEG Main         000002b1
 CSEG IntV0        0000040e
-CSEG ADCF0        00000459
+CSEG CollisionTask 00000459
 CSEG ClockTick    000002f7
 CSEG ClockTickLeftRight 00000323
 CSEG DoorSwDebounce 000004ea
@@ -555,9 +555,9 @@ CSEG forever      000002e2
 CSEG TaskCallback 000002e4
 CSEG DoorCallback 000002ed
 CSEG IndicatorCallback 000002f2
-CSEG IntV1        00000491
+CSEG LightToggleSubroutine 00000491
 CSEG SkipTask     00000311
-CSEG Task_3       000003b3
+CSEG FuelInjTask  000003b3
 CSEG MonitorTask  00000397
 CSEG StopIndicator 00000393
 CSEG LeftLEDON    00000350
