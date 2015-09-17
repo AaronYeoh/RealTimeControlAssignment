@@ -690,6 +690,9 @@ IntV0:
 		sbrc r16, 0
 		rjmp StopDoor
 		
+		sbic PIND, PD2
+		rjmp RetDoor
+
 		;Clear IntV0 enable
 		in r16, GICR
 		cbr r16, (1<<INT0)
@@ -938,7 +941,7 @@ DoorSwDebounce:
 	PushAll
 
 		lds r16, DebounceTicks
-		cpi r16, 2 ;if debounceticks == 1. run code below. Delay by 0.75secs
+		cpi r16, 1 ;if debounceticks == 1. run code below. Delay by 0.25secs
 		brne ContinueCounting
 
 		ldi r16, (1<<INTF0) ;clear interrupt flag by setting INTF0 to 1 then use OUT 
