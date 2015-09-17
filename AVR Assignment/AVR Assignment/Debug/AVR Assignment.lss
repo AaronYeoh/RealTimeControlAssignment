@@ -1,5 +1,5 @@
 
-AVRASM ver. 2.1.52  C:\Users\Aaron\Documents\RealTimeControlAssignment\AVR Assignment\AVR Assignment\AVR Assignment.asm Fri Sep 18 01:02:01 2015
+AVRASM ver. 2.1.52  C:\Users\Aaron\Documents\RealTimeControlAssignment\AVR Assignment\AVR Assignment\AVR Assignment.asm Fri Sep 18 02:56:08 2015
 
 [builtin](2): Including file 'C:\Program Files (x86)\Atmel\Atmel Studio 6.0\extensions\Atmel\AVRAssembler\2.1.51.64\AvrAssembler/Include\m8def.inc'
 C:\Users\Aaron\Documents\RealTimeControlAssignment\AVR Assignment\AVR Assignment\AVR Assignment.asm(50): Including file 'C:\Program Files (x86)\Atmel\Atmel Studio 6.0\extensions\Atmel\AVRAssembler\2.1.51.64\AvrAssembler/Include\m8def.inc'
@@ -1372,8 +1372,6 @@ C:\Users\Aaron\Documents\RealTimeControlAssignment\AVR Assignment\AVR Assignment
 0002c8 b906      		out ADCSRA, r16
                  
                  
-                 		;cbi DDRC,PC1		; DELETE ?
-                 
                  		;********* ClockTick 8-bit Timer/Counter 0 *******      
 0002c9 e003      		ldi r16, (1<<CS01) | (1<< CS00)      ; Start Counter 0      
 0002ca bf03            	out TCCR0, r16			; Timer Clock = Sys Clock (1MHz) / 64 (prescaler)
@@ -1395,7 +1393,7 @@ C:\Users\Aaron\Documents\RealTimeControlAssignment\AVR Assignment\AVR Assignment
 0002d2 bd0d      		out TCNT1H, r16			; TCNT0Value = 255 - MaxValue	
                  
                  
-                 ;********* ClockTick 8-bit Timer/Counter 2 *******
+                 		;********* ClockTick 8-bit Timer/Counter 2 *******
 0002d3 e007      		ldi r16, (1<<CS22) | (1<<CS21) | (1<<CS20) ;TCCR2 is not the same as TCCR0! 1024 prescale
 0002d4 bd05      		out TCCR2, r16			;Timer Clock = Sys Clock (1MHz) / 1024 (prescaler)
                  
@@ -1413,17 +1411,13 @@ C:\Users\Aaron\Documents\RealTimeControlAssignment\AVR Assignment\AVR Assignment
                  
 0002dc e000      		ldi r16, 0
 0002dd 9300 0069 		sts LeftBroken, r16
-0002df 9300 006c 		sts RightBroken, r16
-                 		;sts ToggleRunning, r16
-                 		
+0002df 9300 006c 		sts RightBroken, r16		
                  
 0002e1 9478      		sei ; enable interrupts
                  
                  		;********* Main infinite loop ********
                  forever:
-                 		;Start_Task 1
 0002e2 d001      		rcall TaskCallback
-                 		;End_Task 1
 0002e3 cffe      		rjmp forever 
                  ;*****************End of program *****************
                  
@@ -1432,7 +1426,6 @@ C:\Users\Aaron\Documents\RealTimeControlAssignment\AVR Assignment\AVR Assignment
                  TaskCallback:
                  		;if either the door open toggle or the LeftRight was prevented from running, call them again
                  		
-                 
 0002e4 9100 0073 		lds r16, DoorStopped
 0002e6 fd00      		sbrc r16, 0
 0002e7 d005      			rcall DoorCallback
@@ -1477,7 +1470,6 @@ C:\Users\Aaron\Documents\RealTimeControlAssignment\AVR Assignment\AVR Assignment
 000301 920f
 000302 b70f
 000303 930f      		PushAll
-                 		;Start_Task 	ClockTick_Task	;Turn output indicator pin On
 000304 9478      		sei		;Enable interrupts!!!
                  
                  		;********* Write ClockTick Code here ********                                                                                                                        
@@ -1487,9 +1479,6 @@ C:\Users\Aaron\Documents\RealTimeControlAssignment\AVR Assignment\AVR Assignment
 000307 d189      		rcall LightToggleSubroutine 
                  		; FuelInjectionTimingTask HARD
                  		; Every nth tick, run the timing subroutine
-                 
-                 
-                 		
                  		
                  		; Every tick, read ADCL and:
                  		; convert from fahrenheit to degrees C
@@ -1505,17 +1494,13 @@ C:\Users\Aaron\Documents\RealTimeControlAssignment\AVR Assignment\AVR Assignment
                  		
 00030f 2700      		clr r16
 000310 2711      		clr r17
-                 		
-                 
                  
                  		SkipTask:
 000311 9503      		inc r16
 000312 9300 0068 		sts PulseCounterSchedule, r16
                  
-                 
 000314 d082      		rcall MonitorTask
                  
-                 		;End_Task	ClockTick_Task	;Turn output indicator pin Off
 000315 910f
 000316 bf0f
 000317 900f
@@ -1569,8 +1554,6 @@ C:\Users\Aaron\Documents\RealTimeControlAssignment\AVR Assignment\AVR Assignment
                  
                  		;********* Write ClockTick Code here ********
                  		;LEFT
-                 
-                 
                  		
                  		;When LeftLED is OFF 
 00033c 9bc1      		sbis PORTB, PB1 ;Skip if Left is off (PB0 == 1)
@@ -1716,17 +1699,10 @@ C:\Users\Aaron\Documents\RealTimeControlAssignment\AVR Assignment\AVR Assignment
                  		; Collision DetectionTask HARD - DO NOT SEI 
                  		; Use ADCH and ADCL. if > 0011 (3): Turn on an LED.
                  		; Else turn off. Optimise: Only read ADCH. If any are 1. Turn on LED
-                 		
-                 
                  		; CarDoorIndicatorTask SOFT - SEI ON
-                 		;
-                 
                  		; LeftIndicatorTask FIRM
-                 
                  		; RightIndicatorTask FIRM
-                 
                  		; LeftToggleTask FIRM
-                 
                  		; RightToggleTask FIRM
                  
                  
@@ -1944,7 +1920,7 @@ C:\Users\Aaron\Documents\RealTimeControlAssignment\AVR Assignment\AVR Assignment
                  
                  ;***************** Start of External Interrupt *****************
                  ; Car door status switcher ISR - Soft Real Time   ;Done!
-                 ; DOOR OPEN LIGHT LED PB4
+                 ; DOOR OPEN LIGHT LED PB2
                  
                  IntV0:
 00040e 938f
@@ -1979,15 +1955,12 @@ C:\Users\Aaron\Documents\RealTimeControlAssignment\AVR Assignment\AVR Assignment
 000429 b70b      		in r16, GICR
 00042a 7b0f      		cbr r16, (1<<INT0)
 00042b bf0b      		out GICR, r16
-                 		;Enable counter2 with delay of 0.255s
                  		
-                 
 00042c e400      		ldi r16, (1<<TOV2) ;clear interrupt flag by setting TOV2 to 1 then use OUT 
 00042d bf08      		out TIFR, r16
 00042e 9478      		sei ; Enable interrupts.
-                 		;nop 
-                 		;in r16, TIFR
                  		
+                 		;Enable counter2 with delay of 0.25s
 00042f b709      		in r16, TIMSK
 000430 6400      		sbr r16, (1<<TOIE2)  
 000431 bf09      		out TIMSK, r16
@@ -2244,10 +2217,6 @@ C:\Users\Aaron\Documents\RealTimeControlAssignment\AVR Assignment\AVR Assignment
                  
                  ;Left toggle
                  LeftStatusToggle:
-                 		
-                 		;ldi r16, 1
-                 		;sts ToggleRunning, r16
-                 
 0004d2 9100 0069 		lds r16, LeftBroken
                  
 0004d4 3001      		cpi r16, 1
@@ -2256,27 +2225,18 @@ C:\Users\Aaron\Documents\RealTimeControlAssignment\AVR Assignment\AVR Assignment
 0004d6 e001      		ldi r16, 1
 0004d7 9300 0069 		sts LeftBroken, r16
                  
-                 		;ldi r16, 0
-                 		;sts ToggleRunning, r16
-                 
 0004d9 9508      		ret
                  		
                  		SetLeftTo0:
                  
 0004da e000      		ldi r16, 0
 0004db 9300 0069 		sts LeftBroken, r16
-                 		
-                 		;ldi r16, 0
-                 		;sts ToggleRunning, r16
-                 		
+                 				
 0004dd 9508      		ret
                  
                  ;Right toggle
                  RightStatusToggle:
                  
-                 		;ldi r16, 1
-                 		;sts ToggleRunning, r16
-                 		
 0004de 9100 006c 		lds r16, RightBroken
                  
 0004e0 3001      		cpi r16, 1
@@ -2285,18 +2245,12 @@ C:\Users\Aaron\Documents\RealTimeControlAssignment\AVR Assignment\AVR Assignment
 0004e2 e001      		ldi r16, 1
 0004e3 9300 006c 		sts RightBroken, r16
                  
-                 		;ldi r16, 0
-                 		;sts ToggleRunning, r16
-                 
 0004e5 9508      		ret
                  		
                  		SetRightTo0:
                  
 0004e6 e000      		ldi r16, 0
 0004e7 9300 006c 		sts RightBroken, r16
-                 
-                 		;ldi r16, 0
-                 		;sts ToggleRunning, r16
                  
 0004e9 9508      		ret
                  ;**************** end ******************

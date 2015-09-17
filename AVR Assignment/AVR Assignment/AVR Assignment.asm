@@ -195,7 +195,7 @@ Main:
 		out TCNT1H, r16			; TCNT0Value = 255 - MaxValue	
 
 
-;********* ClockTick 8-bit Timer/Counter 2 *******
+		;********* ClockTick 8-bit Timer/Counter 2 *******
 		ldi r16, (1<<CS22) | (1<<CS21) | (1<<CS20) ;TCCR2 is not the same as TCCR0! 1024 prescale
 		out TCCR2, r16			;Timer Clock = Sys Clock (1MHz) / 1024 (prescaler)
 
@@ -228,7 +228,6 @@ forever:
 TaskCallback:
 		;if either the door open toggle or the LeftRight was prevented from running, call them again
 		
-
 		lds r16, DoorStopped
 		sbrc r16, 0
 			rcall DoorCallback
