@@ -219,7 +219,6 @@ forever:
 
 ;******************Task Callbacks **********************
 TaskCallback:
-	
 		;if either the door open toggle or the LeftRight was prevented from running, call them again
 		
 		lds r16, DoorStopped
@@ -758,11 +757,7 @@ ADCF0:	;Start_Task 	2 	;Turn output indicator pin On
 ;To use, connect P
 IntV1:
 
-				PushAll
-
-		
-		
-		
+		PushAll
 
 		lds r16, LeftToggled; check if left toggle was pressed already
 		cpi r16, 1

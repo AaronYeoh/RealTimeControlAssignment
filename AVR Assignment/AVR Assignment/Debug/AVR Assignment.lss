@@ -1,5 +1,5 @@
 
-AVRASM ver. 2.1.57  H:\Documents\RealTimeControlAssignment\AVR Assignment\AVR Assignment\AVR Assignment.asm Thu Sep 17 12:16:55 2015
+AVRASM ver. 2.1.57  H:\Documents\RealTimeControlAssignment\AVR Assignment\AVR Assignment\AVR Assignment.asm Thu Sep 17 12:33:24 2015
 
 [builtin](2): Including file 'C:\Program Files (x86)\Atmel\Atmel Toolchain\AVR Assembler\Native\2.1.1175\avrassembler\Include\m8def.inc'
 H:\Documents\RealTimeControlAssignment\AVR Assignment\AVR Assignment\AVR Assignment.asm(50): Including file 'C:\Program Files (x86)\Atmel\Atmel Toolchain\AVR Assembler\Native\2.1.1175\avrassembler\Include\m8def.inc'
@@ -1417,7 +1417,6 @@ H:\Documents\RealTimeControlAssignment\AVR Assignment\AVR Assignment\AVR Assignm
                  
                  ;******************Task Callbacks **********************
                  TaskCallback:
-                 	
                  		;if either the door open toggle or the LeftRight was prevented from running, call them again
                  		
 0002e2 9100 0073 		lds r16, DoorStopped
@@ -2112,11 +2111,7 @@ H:\Documents\RealTimeControlAssignment\AVR Assignment\AVR Assignment\AVR Assignm
 000483 921f
 000484 920f
 000485 b70f
-000486 930f      				PushAll
-                 
-                 		
-                 		
-                 		
+000486 930f      		PushAll
                  
 000487 9100 006f 		lds r16, LeftToggled; check if left toggle was pressed already
 000489 3001      		cpi r16, 1
