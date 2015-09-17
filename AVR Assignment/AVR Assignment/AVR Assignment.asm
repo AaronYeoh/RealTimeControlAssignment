@@ -68,15 +68,18 @@ LeftToggled: .byte 1
 RightToggled: .byte 1
 
 
-;Flags for piorities
+
 
 
 FuelInjRunning: .byte 1 ; 0x71
 IndicatorRunning: .byte 1
 DoorStopped: .byte 1
 IndicatorStopped: .byte 1
+ToggleRunning: .byte 1
 
 DebounceTicks: .byte 1
+
+
 
 
 /*  ************ Instructions on using variables in program memory
@@ -182,13 +185,10 @@ Main:
 		
 
 		;********* ClockTick 16-bit Timer/Counter 1 *******      
-		ldi r16, (1<<CS11)      ; Start Counter 0      
+		ldi r16, (1<<CS11)      ; Start Counter 1      
       	out TCCR1B, r16			; Timer Clock = Sys Clock (1MHz) / 8 (prescaler)
 
-		;********* ClockTick 8-bit Timer/Counter 2 *******
-		ldi r16, (1<<CS22) | (1<<CS21) | (1<<CS20) ;TCCR2 is not the same as TCCR0!
-		out TCCR2, r16			;Timer Clock = Sys Clock (1MHz) / 1024 (prescaler)
-		
+				
 		;to get 0.25ms per interrupt, TCNT1 = 34286 = $85EE
 		ldi	r16, $EE			; MaxValue = TOVck (1.5ms or your Cal time) * Pck (1MHz) / 8 (prescaler)
 		out TCNT1L, r16			; TCNT0Value = 2^16 - MaxValue	
@@ -197,6 +197,9 @@ Main:
 		out TCNT1H, r16			; TCNT0Value = 255 - MaxValue	
 
 
+;********* ClockTick 8-bit Timer/Counter 2 *******
+		ldi r16, (1<<CS22) | (1<<CS21) | (1<<CS20) ;TCCR2 is not the same as TCCR0! 1024 prescale
+		out TCCR2, r16			;Timer Clock = Sys Clock (1MHz) / 1024 (prescaler)
 
 
 		;********* Clock Interrupts
@@ -205,7 +208,7 @@ Main:
 
 
 
-
+		;**********Set default values for flags***********
 		ldi r16 , 1
 		sts PulseCounterSchedule, r16
 		sts PulseWidth, r16
@@ -213,6 +216,8 @@ Main:
 		ldi r16, 0
 		sts LeftBroken, r16
 		sts RightBroken, r16
+		;sts ToggleRunning, r16
+		
 
 		sei ; enable interrupts
 
@@ -229,6 +234,7 @@ forever:
 TaskCallback:
 		;if either the door open toggle or the LeftRight was prevented from running, call them again
 		
+
 		lds r16, DoorStopped
 		sbrc r16, 0
 			rcall DoorCallback
@@ -236,13 +242,14 @@ TaskCallback:
 		lds r16, IndicatorStopped
 		sbrc r16, 0
 			rcall IndicatorCallback
-
+		
 		ret
 
 DoorCallback:
 		rcall IntV0
 		ldi r16, 0
 		sts DoorStopped, r16
+		
 		ret
 
 
@@ -250,6 +257,7 @@ IndicatorCallback:
 		rcall ClockTickLeftRight
 		ldi r16, 0
 		sts IndicatorStopped, r16
+		
 		ret
 ;******************END Task Callbacks **********************
 
@@ -674,7 +682,13 @@ IntV0:
 		sbrc r16, 0
 		rjmp StopDoor
 
-		
+		lds r16, ToggleRunning
+		sbrc r16, 0
+		rjmp StopDoor
+
+		lds r16, IndicatorRunning
+		sbrc r16, 0
+		rjmp StopDoor
 		
 		;Clear IntV0 enable
 		in r16, GICR
@@ -787,6 +801,9 @@ IntV1:
 
 		PushAll
 
+		ldi r16, 1
+		sts ToggleRunning, r16
+
 		lds r16, LeftToggled; check if left toggle was pressed already
 		cpi r16, 1
 		brne AllowToggleLeft
@@ -817,8 +834,7 @@ IntV1:
 
 		ldi r16, 0
 		sts RightToggled, r16
-		PopAll
-		reti
+		rjmp ReturnFromIntV1
 
 		AllowToggleRight:
 		sbic PIND, PD4; Right Broken toggle
@@ -831,6 +847,9 @@ IntV1:
 		
 
 		ReturnFromIntV1:
+
+			ldi r16, 0
+			sts ToggleRunning, r16 ;about to return, no longer running 
 			PopAll
 			reti
 
@@ -857,6 +876,9 @@ IntV1:
 ;Left toggle
 LeftStatusToggle:
 		
+		;ldi r16, 1
+		;sts ToggleRunning, r16
+
 		lds r16, LeftBroken
 
 		cpi r16, 1
@@ -864,17 +886,28 @@ LeftStatusToggle:
 		
 		ldi r16, 1
 		sts LeftBroken, r16
+
+		;ldi r16, 0
+		;sts ToggleRunning, r16
+
 		ret
 		
 		SetLeftTo0:
 
 		ldi r16, 0
 		sts LeftBroken, r16
+		
+		;ldi r16, 0
+		;sts ToggleRunning, r16
+		
 		ret
 
 ;Right toggle
 RightStatusToggle:
 
+		;ldi r16, 1
+		;sts ToggleRunning, r16
+		
 		lds r16, RightBroken
 
 		cpi r16, 1
@@ -882,12 +915,20 @@ RightStatusToggle:
 		
 		ldi r16, 1
 		sts RightBroken, r16
+
+		;ldi r16, 0
+		;sts ToggleRunning, r16
+
 		ret
 		
 		SetRightTo0:
 
 		ldi r16, 0
 		sts RightBroken, r16
+
+		;ldi r16, 0
+		;sts ToggleRunning, r16
+
 		ret
 ;**************** end ******************
 
@@ -897,10 +938,11 @@ DoorSwDebounce:
 	PushAll
 
 		lds r16, DebounceTicks
-		cpi r16, 4 ;if debounceticks == 4. run code below
+		cpi r16, 2 ;if debounceticks == 1. run code below. Delay by 0.75secs
 		brne ContinueCounting
 
-		
+		ldi r16, (1<<INTF0) ;clear interrupt flag by setting INTF0 to 1 then use OUT 
+		out GIFR, r16
 	    ;set IntV0 enable
 		in r16, GICR
 		sbr r16, (1<<INT0)
