@@ -103,6 +103,8 @@ ld r1,Z ; Load VAR1 into register 1
 		rjmp ClockTick 		;ClockTick vector
 .org OVF1addr				;Setting Origin Address
 		rjmp ClockTickLeftRight 		;ClockTick vector
+.org OVF2addr
+		rjmp DoorSwDebounce
 
 ;.cseg
 .org   0x0100               ;table address engine speed (RPM) and load
@@ -171,7 +173,7 @@ Main:
 
 		;********* ClockTick 8-bit Timer/Counter 0 *******      
 		ldi r16, (1<<CS01) | (1<< CS00)      ; Start Counter 0      
-      	out TCCR0, r16			; Timer Clock = Sys Clock (1MHz) / 8 (prescaler)
+      	out TCCR0, r16			; Timer Clock = Sys Clock (1MHz) / 64 (prescaler)
 		
 		ldi	r16, 128				; MaxValue = TOVck (1.5ms or your Cal time) * Pck (1MHz) / 8 (prescaler)
 		out TCNT0, r16			; TCNT0Value = 255 - MaxValue	
@@ -180,6 +182,10 @@ Main:
 		;********* ClockTick 16-bit Timer/Counter 1 *******      
 		ldi r16, (1<<CS11)      ; Start Counter 0      
       	out TCCR1B, r16			; Timer Clock = Sys Clock (1MHz) / 8 (prescaler)
+
+		;********* ClockTick 8-bit Timer/Counter 2 *******
+		ldi r16, (1<<CS22) | (1<<CS20)
+		out TCCR2, r16			;Timer Clock = Sys Clock (1MHz) / 1024 (prescaler)
 		
 		;to get 0.25ms per interrupt, TCNT1 = 34286 = $85EE
 		ldi	r16, $EE			; MaxValue = TOVck (1.5ms or your Cal time) * Pck (1MHz) / 8 (prescaler)
@@ -627,7 +633,7 @@ Task_3:	;Start_Task 	3	;Turn output indicator pin On
 		 ;Finally we divide by 40
 		 rcall div24x24_24 ;r24:r23:r22 = r24:r23:r22 / r21:r20:r19
 		 
-		 ldi r19,2
+		 ldi r19,8 ; where 8ms is the clocktick period
 
 		 rcall div24x24_24 ;r24:r23:r22 = r24:r23:r22 / r21:r20:r19
 
@@ -667,6 +673,13 @@ IntV0:
 		rjmp StopDoor
 
 		sei ; Enable interrupts.
+
+		;Clear IntV0 enable
+		cbi GICR, INT0
+		;Enable counter2 with delay of 0.5s
+		ldi	r16, 128				
+		out TCNT2, r16
+		sbi TIMSK, TOIE2
 
 		;Check the PB2 bit. If it is set, the door WAS shut (LED off) and it's now open. We want to turn ON the LED. 
 		sbic PORTB, PB2
@@ -862,3 +875,8 @@ RightStatusToggle:
 		sts RightBroken, r16
 		ret
 ;**************** end ******************
+
+
+;************DoorSwDebounce*************
+
+cbi TIMSK, TOIE2 ; disable counter2 overflow
