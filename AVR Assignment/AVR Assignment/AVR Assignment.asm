@@ -184,7 +184,7 @@ Main:
       	out TCCR1B, r16			; Timer Clock = Sys Clock (1MHz) / 8 (prescaler)
 
 		;********* ClockTick 8-bit Timer/Counter 2 *******
-		ldi r16, (1<<CS22) | (1<<CS20)
+		ldi r16, (1<<CS22) | (1<<CS21) | (1<<CS20) ;TCCR2 is not the same as TCCR0!
 		out TCCR2, r16			;Timer Clock = Sys Clock (1MHz) / 1024 (prescaler)
 		
 		;to get 0.25ms per interrupt, TCNT1 = 34286 = $85EE
@@ -676,15 +676,20 @@ IntV0:
 		
 		;Clear IntV0 enable
 		in r16, GICR
-		cbr r16, INT0
+		cbr r16, (1<<INT0)
 		out GICR, r16
 		;Enable counter2 with delay of 0.255s
-		ldi	r16, 0				
-		out TCNT2, r16
-
+		
+		in r16, TIFR
+		cbr r16, (1<<TOV2) 
+		out TIFR, r16
+		
 		in r16, TIMSK
-		sbr r16, TOIE2
+		sbr r16, (1<<TOIE2)  
 		out TIMSK, r16
+		nop ; sync
+		ldi	r16, 1				
+		out TCNT2, r16
 
 		;Check the PB2 bit. If it is set, the door WAS shut (LED off) and it's now open. We want to turn ON the LED. 
 		sbic PORTB, PB2
@@ -889,12 +894,12 @@ DoorSwDebounce:
 
 	    ;set IntV0 enable
 		in r16, GICR
-		sbr r16, INT0
+		sbr r16, (1<<INT0)
 		out GICR, r16
 		
 		;disable counter2 
 		in r16, TIMSK
-		cbr r16, TOIE2
+		cbr r16, (1<<TOIE2)
 		out TIMSK, r16
 
 
