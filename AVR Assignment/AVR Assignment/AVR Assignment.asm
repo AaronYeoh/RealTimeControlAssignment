@@ -673,13 +673,18 @@ IntV0:
 		rjmp StopDoor
 
 		sei ; Enable interrupts.
-
+		
 		;Clear IntV0 enable
-		cbi GICR, INT0
-		;Enable counter2 with delay of 0.5s
-		ldi	r16, 128				
+		in r16, GICR
+		cbr r16, INT0
+		out GICR, r16
+		;Enable counter2 with delay of 0.255s
+		ldi	r16, 0				
 		out TCNT2, r16
-		sbi TIMSK, TOIE2
+
+		in r16, TIMSK
+		sbr r16, TOIE2
+		out TIMSK, r16
 
 		;Check the PB2 bit. If it is set, the door WAS shut (LED off) and it's now open. We want to turn ON the LED. 
 		sbic PORTB, PB2
@@ -878,5 +883,25 @@ RightStatusToggle:
 
 
 ;************DoorSwDebounce*************
+DoorSwDebounce:
+	PushAll
 
-cbi TIMSK, TOIE2 ; disable counter2 overflow
+
+	    ;set IntV0 enable
+		in r16, GICR
+		sbr r16, INT0
+		out GICR, r16
+		
+		;disable counter2 
+		in r16, TIMSK
+		cbr r16, TOIE2
+		out TIMSK, r16
+
+
+	PopAll
+
+	reti
+;************end***************
+
+
+
