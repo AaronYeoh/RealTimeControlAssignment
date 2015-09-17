@@ -680,8 +680,8 @@ IntV0:
 		out GICR, r16
 		;Enable counter2 with delay of 0.255s
 		
-		in r16, TIFR
-		cbr r16, (1<<TOV2) 
+
+		ldi r16, (1<<TOV2) ;clear interrupt flag by setting TOV2 to 1 then use OUT 
 		out TIFR, r16
 		
 		in r16, TIMSK
