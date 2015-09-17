@@ -76,6 +76,8 @@ IndicatorRunning: .byte 1
 DoorStopped: .byte 1
 IndicatorStopped: .byte 1
 
+DebounceTicks: .byte 1
+
 
 /*  ************ Instructions on using variables in program memory
 .DSEG 
@@ -672,7 +674,7 @@ IntV0:
 		sbrc r16, 0
 		rjmp StopDoor
 
-		sei ; Enable interrupts.
+		
 		
 		;Clear IntV0 enable
 		in r16, GICR
@@ -683,7 +685,7 @@ IntV0:
 
 		ldi r16, (1<<TOV2) ;clear interrupt flag by setting TOV2 to 1 then use OUT 
 		out TIFR, r16
-
+		sei ; Enable interrupts.
 		;nop 
 		;in r16, TIFR
 		
@@ -894,7 +896,11 @@ RightStatusToggle:
 DoorSwDebounce:
 	PushAll
 
+		lds r16, DebounceTicks
+		cpi r16, 4 ;if debounceticks == 4. run code below
+		brne ContinueCounting
 
+		
 	    ;set IntV0 enable
 		in r16, GICR
 		sbr r16, (1<<INT0)
@@ -904,11 +910,14 @@ DoorSwDebounce:
 		in r16, TIMSK
 		cbr r16, (1<<TOIE2)
 		out TIMSK, r16
+		
+		clr r16
+		ContinueCounting:
+			inc r16
+			sts DebounceTicks, r16
+			PopAll
 
-
-	PopAll
-
-	reti
+			reti
 ;************end***************
 
 

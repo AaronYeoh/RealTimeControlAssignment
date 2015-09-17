@@ -1,5 +1,5 @@
 
-AVRASM ver. 2.1.57  H:\Documents\RealTimeControlAssignment\AVR Assignment\AVR Assignment\AVR Assignment.asm Thu Sep 17 14:47:11 2015
+AVRASM ver. 2.1.57  E:\RealTimeControlAssignment\AVR Assignment\AVR Assignment\AVR Assignment.asm Thu Sep 17 15:16:13 2015
 
 
 EQU  SIGNATURE_000 0000001e
@@ -521,12 +521,13 @@ DSEG FuelInjRunning 00000071
 DSEG IndicatorRunning 00000072
 DSEG DoorStopped  00000073
 DSEG IndicatorStopped 00000074
+DSEG DebounceTicks 00000075
 CSEG Main         000002b1
 CSEG IntV0        0000040e
-CSEG ADCF0        00000451
+CSEG ADCF0        0000044f
 CSEG ClockTick    000002f7
 CSEG ClockTickLeftRight 00000323
-CSEG DoorSwDebounce 000004e9
+CSEG DoorSwDebounce 000004e7
 CSEG RPMLoad_Lookup 00000100
 CSEG FactorA_Lookup 00000108
 CSEG FactorB_Lookup 0000010a
@@ -553,7 +554,7 @@ CSEG forever      000002e2
 CSEG TaskCallback 000002e4
 CSEG DoorCallback 000002ed
 CSEG IndicatorCallback 000002f2
-CSEG IntV1        00000489
+CSEG IntV1        00000487
 CSEG SkipTask     00000311
 CSEG Task_3       000003b3
 CSEG MonitorTask  00000397
@@ -568,16 +569,17 @@ CSEG TurnOnRightLater 0000036f
 CSEG TurnOffRightLater 0000037f
 CSEG SetToOne     000003fa
 CSEG RetFuelInj   000003fd
-CSEG StopDoor     0000044d
-CSEG door_shut    0000043e
-CSEG RetDoor      0000043f
-CSEG collision    0000047a
-CSEG RetADC       0000047b
-CSEG AllowToggleLeft 000004a0
-CSEG CheckRightToggle 000004a6
-CSEG LeftStatusToggle 000004d1
-CSEG AllowToggleRight 000004bd
-CSEG ReturnFromIntV1 000004c3
-CSEG RightStatusToggle 000004dd
-CSEG SetLeftTo0   000004d9
-CSEG SetRightTo0  000004e5
+CSEG StopDoor     0000044b
+CSEG door_shut    0000043c
+CSEG RetDoor      0000043d
+CSEG collision    00000478
+CSEG RetADC       00000479
+CSEG AllowToggleLeft 0000049e
+CSEG CheckRightToggle 000004a4
+CSEG LeftStatusToggle 000004cf
+CSEG AllowToggleRight 000004bb
+CSEG ReturnFromIntV1 000004c1
+CSEG RightStatusToggle 000004db
+CSEG SetLeftTo0   000004d7
+CSEG SetRightTo0  000004e3
+CSEG ContinueCounting 000004ff
