@@ -148,6 +148,9 @@ Main:
 		sbi DDRB, PB4; collision LED
 		sbi DDRB, PB1; right LED
 
+		sbi DDRB, PB5; FuelInj LED
+		sbi DDRB, PB3; MonitorTask LED
+
 		;Set everything high in PORTD, set DDRD to be input only
 		ldi r16, $FF;
 		out PORTD, r16
@@ -178,7 +181,7 @@ Main:
 		ldi r16, (1<<CS01) | (1<< CS00)      ; Start Counter 0      
       	out TCCR0, r16			; Timer Clock = Sys Clock (1MHz) / 64 (prescaler)
 		
-		ldi	r16, 128				; MaxValue = TOVck (1.5ms or your Cal time) * Pck (1MHz) / 8 (prescaler)
+		ldi	r16, 64				; MaxValue = TOVck (1.5ms or your Cal time) * Pck (1MHz) / 8 (prescaler)
 		out TCNT0, r16			; TCNT0Value = 255 - MaxValue	
 		
 
@@ -260,10 +263,11 @@ IndicatorCallback:
 ;***************** Clock Tick Interrupt Service Routine *****************
 ClockTick:
 		PushAll
+		cbi PORTB, PB3 ;Uncomment to output signal when task running. Do the same at the bottom
 		sei		;Enable interrupts!!!
 
 		;********* Write ClockTick Code here ********                                                                                                                        
-		ldi	r16, 100				; MaxValue = TOVck (1.5ms or your Cal time) * Pck (1MHz) / 8 (prescaler)
+		ldi	r16, 64				; MaxValue = TOVck (1.5ms or your Cal time) * Pck (1MHz) / 8 (prescaler)
 		out TCNT0, r16			; TCNT0Value = 255 - MaxValue	
 		
 		rcall LightToggleSubroutine 
@@ -292,6 +296,7 @@ ClockTick:
 		rcall MonitorTask
 
 		PopAll
+		sbi PORTB, PB3 ;Uncomment to output signal when task running. Do the same at the bottom
 		RETI						;Return from Interurpt
 
 
@@ -463,6 +468,7 @@ ClockTickLeftRight:
 
 
 MonitorTask:
+		;cbi PORTB, PB3 ;Uncomment to output signal when task running. Do the same at the bottom
 		in r22, ADCL
 		
 		;Treat r18 (ADCL) as Fahrenheit and convert to celcius
@@ -515,14 +521,16 @@ MonitorTask:
 		mov r23, r22
 		
 		pop r22
+		;sbi PORTB, PB3 ;Uncomment to output signal when task running. Do the same at the bottom
 		
 		RET
 
 
 ;***************** Start of Task3 *****************
 FuelInjTask:	;Start_Task 	3	;Turn output indicator pin On
-		PushAll
 		
+		PushAll
+		cbi PORTB, PB5 ;Uncomment to output signal when task running. Do the same at the bottom
 		ldi r16, 1
 		sts FuelInjRunning, r16
 
@@ -619,7 +627,7 @@ FuelInjTask:	;Start_Task 	3	;Turn output indicator pin On
 		 ;Finally we divide by 40
 		 rcall div24x24_24 ;r24:r23:r22 = r24:r23:r22 / r21:r20:r19
 		 
-		 ldi r19,8 ; where 8ms is the clocktick period
+		 ldi r19,4 ; where 2ms is the clocktick period
 
 		 rcall div24x24_24 ;r24:r23:r22 = r24:r23:r22 / r21:r20:r19
 
@@ -641,6 +649,7 @@ FuelInjTask:	;Start_Task 	3	;Turn output indicator pin On
 		RetFuelInj:
 		ldi r16, 0
 		sts FuelInjRunning, r16
+		sbi PORTB, PB5  
 
 		PopAll
 		RET
@@ -712,7 +721,7 @@ IntV0:
 
 
 
-
+sbi DDRB, PB5;
 ;***************** Collision Detection*****************
 CollisionTask:	;Start_Task 	2 	;Turn output indicator pin On
 		PushAll
